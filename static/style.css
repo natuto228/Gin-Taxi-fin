@@ -1,0 +1,418 @@
+@font-face {
+    font-family: 'SouthGhetto';
+    src: url('https://fonts.cdnfonts.com/css/southghetto') format('woff2');
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'SouthGhetto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: white;
+    min-height: 100vh;
+    color: black;
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.header {
+    background: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.user-status {
+    font-size: 14px;
+    color: black;
+}
+
+.user-status a {
+    color: black;
+    text-decoration: none;
+}
+
+.main-content {
+    display: flex;
+    flex: 1;
+    padding: 20px;
+    gap: 20px;
+}
+
+.sidebar {
+    width: 25%;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.logo-image-card {
+    text-align: center;
+    cursor: pointer;
+    background: transparent;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+}
+
+.logo-image-card img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+.logo-image-card p {
+    margin-top: 10px;
+    font-size: 14px;
+    color: black;
+}
+
+.action-card {
+    background: #87CEFA;
+    border-radius: 8px;
+    padding: 12px 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.action-card:hover {
+    background: #6bb5e0;
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.action-card h3 {
+    font-size: 14px;
+    font-weight: normal;
+    color: white;
+    margin-bottom: 0;
+}
+
+.driver-card {
+    background: #87CEFA;
+    border-radius: 0 30px 30px 0;
+    padding: 12px 20px;
+    margin-left: -20px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: calc(100% + 20px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.driver-card:hover {
+    background: #6bb5e0;
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.driver-card h3 {
+    font-size: 14px;
+    font-weight: normal;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.driver-card p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.8);
+}
+
+.map-container {
+    width: 75%;
+    background: #f5f5f5;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+    min-height: 600px;
+}
+
+.search-overlay {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 80%;
+    max-width: 400px;
+    display: flex;
+    gap: 8px;
+    background: rgba(255,255,255,0.95);
+    padding: 6px;
+    border-radius: 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.search-overlay input {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 30px;
+    font-size: 13px;
+    background: white;
+    font-family: 'SouthGhetto', sans-serif;
+    color: black;
+    outline: none;
+}
+
+.search-overlay button {
+    background: #87CEFA;
+    border: none;
+    border-radius: 30px;
+    padding: 6px 18px;
+    color: white;
+    cursor: pointer;
+    font-family: 'SouthGhetto', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.search-overlay button:hover {
+    background: #6bb5e0;
+}
+
+.map-location-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #87CEFA;
+}
+
+.map-location-btn:hover {
+    background: #f0f0f0;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.footer {
+    background: white;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    padding: 15px 20px;
+    font-size: 11px;
+    margin-top: auto;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.footer-content span {
+    color: #999;
+}
+
+.modal-custom {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.modal-content h3 {
+    margin-bottom: 15px;
+    color: black;
+    font-size: 16px;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'SouthGhetto', sans-serif;
+    background: white;
+    color: black;
+}
+
+.btn-primary {
+    background: #87CEFA;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'SouthGhetto', sans-serif;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #6bb5e0;
+}
+
+.btn-secondary {
+    background: #e0e0e0;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    color: black;
+    cursor: pointer;
+    font-family: 'SouthGhetto', sans-serif;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.login-body {
+    background: white;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    width: 100%;
+    max-width: 360px;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.login-logo-circle {
+    width: 60px;
+    height: 60px;
+    background: #87CEFA;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 28px;
+    color: white;
+    font-weight: bold;
+}
+
+.login-title {
+    text-align: center;
+    margin-bottom: 20px;
+    color: black;
+    font-size: 16px;
+}
+
+.login-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.login-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-family: 'SouthGhetto', sans-serif;
+    background: white;
+    color: black;
+}
+
+.login-btn {
+    background: #87CEFA;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'SouthGhetto', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+    background: #6bb5e0;
+}
+
+.login-test-info {
+    text-align: center;
+    margin-top: 15px;
+    color: #999;
+    font-size: 10px;
+}
+
+.header-back {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: black;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+    .sidebar, .map-container {
+        width: 100%;
+    }
+    .driver-card {
+        margin-left: 0;
+        border-radius: 8px;
+        width: 100%;
+    }
+    .footer-content {
+        gap: 15px;
+        flex-direction: column;
+    }
+}

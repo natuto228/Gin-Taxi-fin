@@ -1,10 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Gin Taxi</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gin Taxi - Заказ такси</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>Gin Taxi</h1>
-    <a href="/login">Войти</a>
+
+<div class="page-container">
+    
+    <header class="header">
+        <div class="user-status">
+            <i class="fas fa-user-circle"></i>
+            <span id="userNameHeader">
+                <a href="/login-user">Войти</a>
+            </span>
+        </div>
+    </header>
+    
+    <div class="main-content">
+        
+        <aside class="sidebar">
+            
+            <div class="logo-image-card" onclick="window.location.href='/'">
+                <img src="/static/gin_photo.jpg" alt="Gin">
+                <p>Gin Taxi</p>
+            </div>
+            
+            <div class="action-card" onclick="makePhoneCall()">
+                <h3>Заказ по телефону</h3>
+            </div>
+            
+            <div class="action-card" onclick="openOrderForm()">
+                <h3>Выбрать тариф</h3>
+            </div>
+            
+            <div class="action-card" onclick="openCommentModal()">
+                <h3>Комментарий водителю</h3>
+            </div>
+            
+            <div class="driver-card" onclick="window.location.href='/login'">
+                <h3>Войти в профиль</h3>
+                <p>Работа в такси</p>
+            </div>
+            
+        </aside>
+        
+        <div class="map-container">
+            <div class="search-overlay">
+                <input type="text" id="addressSearch" placeholder="Поиск адреса">
+                <button onclick="searchAddress()">Найти</button>
+            </div>
+            <button class="map-location-btn" onclick="setCurrentLocation()" title="Моё местоположение">
+                <i class="fas fa-location-dot"></i>
+            </button>
+            <div id="map"></div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <span>Ибрагимова Ф.Н.</span>
+            <span>Учебный проект</span>
+            <span>Gin Taxi 2026</span>
+        </div>
+    </footer>
+</div>
+
+<div id="orderModal" class="modal-custom">
+    <div class="modal-content">
+        <h3>Заказ такси</h3>
+        <hr>
+        <input type="text" id="orderName" placeholder="ФИО">
+        <input type="tel" id="orderPhone" placeholder="Телефон">
+        <input type="text" id="orderPickup" placeholder="Адрес подачи">
+        <input type="text" id="orderDropoff" placeholder="Адрес назначения">
+        <select id="orderTariff">
+            <option value="Эконом (25 руб/км)">Эконом - 25 руб/км</option>
+            <option value="Комфорт (35 руб/км)">Комфорт - 35 руб/км</option>
+            <option value="Бизнес (50 руб/км)">Бизнес - 50 руб/км</option>
+        </select>
+        <button class="btn-primary" onclick="submitOrder()">Заказать такси</button>
+        <button class="btn-secondary" onclick="closeOrderModal()">Отмена</button>
+    </div>
+</div>
+
+<div id="commentModal" class="modal-custom">
+    <div class="modal-content">
+        <h3>Комментарий водителю</h3>
+        <textarea id="driverComment" rows="4" placeholder="Ваши пожелания..."></textarea>
+        <button class="btn-primary" onclick="sendComment()">Отправить</button>
+        <button class="btn-secondary" onclick="closeCommentModal()">Отмена</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/script.js"></script>
+
 </body>
 </html>
