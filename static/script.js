@@ -75,3 +75,68 @@ if (commentBtn) {
         alert('Комментарий водителю будет добавлен');
     };
 }
+// ===== ФУНКЦИИ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ =====
+function makePhoneCall() {
+    window.location.href = 'tel:+78121234567';
+}
+
+function openOrderForm() {
+    const modal = document.getElementById('orderModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeOrderModal() {
+    const modal = document.getElementById('orderModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function openCommentModal() {
+    const modal = document.getElementById('commentModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeCommentModal() {
+    const modal = document.getElementById('commentModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function submitOrder() {
+    const name = document.getElementById('orderName').value;
+    const phone = document.getElementById('orderPhone').value;
+    const pickup = document.getElementById('orderPickup').value;
+    const dropoff = document.getElementById('orderDropoff').value;
+    
+    if (!name || !phone || !pickup || !dropoff) {
+        alert('Заполните все поля');
+        return;
+    }
+    
+    alert(`Заказ оформлен!\n\nОткуда: ${pickup}\nКуда: ${dropoff}\nВодитель скоро прибудет!`);
+    closeOrderModal();
+    
+    document.getElementById('orderName').value = '';
+    document.getElementById('orderPhone').value = '';
+    document.getElementById('orderPickup').value = '';
+    document.getElementById('orderDropoff').value = '';
+}
+
+function sendComment() {
+    const comment = document.getElementById('driverComment').value;
+    if (comment) {
+        alert('Комментарий отправлен');
+        document.getElementById('driverComment').value = '';
+        closeCommentModal();
+    } else {
+        alert('Введите комментарий');
+    }
+}
+
+function searchAddress() {
+    const query = document.getElementById('addressSearch').value;
+    if (!query) return;
+    alert('Поиск адреса: ' + query + '\n(Функция поиска будет добавлена позже)');
+}
+
+function setCurrentLocation() {
+    alert('Определение местоположения\n(Функция будет добавлена позже)');
+}
