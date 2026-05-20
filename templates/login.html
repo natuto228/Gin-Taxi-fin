@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Вход</title>
+</head>
+<body>
+    <h2>Вход водителя</h2>
+    <input type="text" id="login" placeholder="Логин">
+    <input type="password" id="password" placeholder="Пароль">
+    <button onclick="goToDashboard()">Войти</button>
+    
+    <script>
+        function goToDashboard() {
+            localStorage.setItem('driver', 'true');
+            window.location.href = '/dashboard';
+        }
+    </script>
+</body>
+</html>

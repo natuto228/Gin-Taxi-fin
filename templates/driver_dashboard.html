@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Кабинет</title>
+</head>
+<body>
+    <h2>Кабинет водителя</h2>
+    <p>Добро пожаловать!</p>
+    <a href="/">На главную</a>
+    
+    <script>
+        if (!localStorage.getItem('driver')) {
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>
