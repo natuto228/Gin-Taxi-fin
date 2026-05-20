@@ -1,43 +1,72 @@
 console.log('Script loaded');
 
+// ===== КАРТА =====
+let map;
+
+function initMap() {
+    if (typeof L === 'undefined') {
+        console.error('Leaflet не загружен');
+        return;
+    }
+    
+    const mapElement = document.getElementById('map');
+    if (!mapElement) {
+        console.error('Элемент map не найден');
+        return;
+    }
+    
+    map = L.map('map').setView([59.9343, 30.3351], 12);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 19,
+        minZoom: 1
+    }).addTo(map);
+    
+    console.log('Карта инициализирована');
+}
+
+// Запуск карты после загрузки страницы
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.pathname === '/') {
+        initMap();
+    }
+});
+
+// Проверка загрузки карты через 2 секунды
+setTimeout(function() {
+    if (!map && window.location.pathname === '/') {
+        console.log('Пробуем перезагрузить карту...');
+        initMap();
+    }
+}, 2000);
+
 // ===== ВХОД ВОДИТЕЛЯ =====
 if (window.location.pathname === '/login') {
-    console.log('На странице входа водителя');
-    
     const form = document.getElementById('driverLoginForm');
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('Форма отправлена');
             localStorage.setItem('driver', 'true');
             window.location.href = '/driver-dashboard';
         });
-    } else {
-        console.log('Форма driverLoginForm не найдена');
     }
 }
 
 // ===== КАБИНЕТ ВОДИТЕЛЯ =====
 if (window.location.pathname === '/driver-dashboard') {
-    console.log('На странице кабинета водителя');
-    
     if (!localStorage.getItem('driver')) {
-        console.log('Нет авторизации, редирект на /login');
         window.location.href = '/login';
-    } else {
-        console.log('Авторизация есть, показываем кабинет');
     }
 }
 
 // ===== ВХОД ПОЛЬЗОВАТЕЛЯ =====
 if (window.location.pathname === '/login-user') {
-    console.log('На странице входа пользователя');
-    
     const form = document.getElementById('loginUserForm');
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('Форма пользователя отправлена');
             localStorage.setItem('user', 'true');
             window.location.href = '/user-profile';
         });
@@ -46,35 +75,11 @@ if (window.location.pathname === '/login-user') {
 
 // ===== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ =====
 if (window.location.pathname === '/user-profile') {
-    console.log('На странице профиля пользователя');
-    
     if (!localStorage.getItem('user')) {
-        console.log('Нет авторизации пользователя, редирект на /login-user');
         window.location.href = '/login-user';
     }
 }
 
-// ===== КНОПКИ НА ГЛАВНОЙ =====
-const orderBtn = document.getElementById('orderBtn');
-if (orderBtn) {
-    orderBtn.onclick = function() {
-        alert('Заказ оформлен!');
-    };
-}
-
-const phoneOrderBtn = document.getElementById('phoneOrderBtn');
-if (phoneOrderBtn) {
-    phoneOrderBtn.onclick = function() {
-        window.location.href = 'tel:+78121234567';
-    };
-}
-
-const commentBtn = document.getElementById('commentBtn');
-if (commentBtn) {
-    commentBtn.onclick = function() {
-        alert('Комментарий водителю будет добавлен');
-    };
-}
 // ===== ФУНКЦИИ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ =====
 function makePhoneCall() {
     window.location.href = 'tel:+78121234567';
@@ -134,9 +139,43 @@ function sendComment() {
 function searchAddress() {
     const query = document.getElementById('addressSearch').value;
     if (!query) return;
-    alert('Поиск адреса: ' + query + '\n(Функция поиска будет добавлена позже)');
+    
+    if (map) {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    map.setView([lat, lon], 15);
+                } else {
+                    alert('Адрес не найден');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка поиска:', error);
+                alert('Ошибка при поиске адреса');
+            });
+    } else {
+        alert('Карта ещё не загружена');
+    }
 }
 
 function setCurrentLocation() {
-    alert('Определение местоположения\n(Функция будет добавлена позже)');
+    if (!map) {
+        alert('Карта ещё не загружена');
+        return;
+    }
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            map.setView([lat, lng], 15);
+        }, function() {
+            alert('Не удалось определить местоположение');
+        });
+    } else {
+        alert('Геолокация не поддерживается');
+    }
 }

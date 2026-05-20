@@ -13,38 +13,19 @@
 <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container">
         <a class="navbar-brand" href="/">Gin</a>
-        <div>
-            <span class="text-white me-3" id="userNameDisplay"></span>
-            <a href="/" class="btn btn-outline-light btn-sm" id="logoutUserBtn">Выйти</a>
-        </div>
+        <a href="/" class="btn btn-outline-light btn-sm" id="logoutUserBtn">Выйти</a>
     </div>
 </nav>
 
 <div class="profile-container">
     <div class="row">
-        <div class="col-md-4">
-            <div class="profile-card">
-                <div class="profile-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h4 id="userFullname" class="profile-name"></h4>
-                <p class="profile-role">Пользователь Gin</p>
-                
-                <div class="profile-stats">
-                    <div class="stat-number" id="totalOrders">0</div>
-                    <p class="stat-label">Всего поездок</p>
-                </div>
-                
-                <hr class="profile-hr">
-                <a href="/" class="profile-order-btn">Заказать такси</a>
-            </div>
-        </div>
-        
-        <div class="col-md-8">
-            <div class="profile-orders-card">
-                <h5 class="profile-orders-title">История моих заказов</h5>
-                <div id="ordersHistory">
-                    <div class="profile-loading">Загрузка...</div>
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-circle fa-4x mb-3" style="color: #87CEFA;"></i>
+                    <h2>Личный кабинет пользователя</h2>
+                    <p>Добро пожаловать! Вы успешно вошли в систему.</p>
+                    <a href="/" class="btn btn-primary" style="background:#87CEFA; border:none;">На главную</a>
                 </div>
             </div>
         </div>

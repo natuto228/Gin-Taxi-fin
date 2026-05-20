@@ -58,25 +58,28 @@ body {
     gap: 15px;
 }
 
-/* ===== ЛОГО ===== */
+/* ===== ЛОГО - БЕЗ ГОЛУБОГО ФОНА ===== */
 .logo-image-card {
     text-align: center;
     cursor: pointer;
-    background: #f0f8ff;
-    border-radius: 12px;
-    padding: 20px;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 20px;
     transition: all 0.3s ease;
 }
 
 .logo-image-card:hover {
     transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .logo-image-card img {
-    max-width: 80%;
+    width: 100%;
+    max-width: 200px;
     height: auto;
-    border-radius: 10px;
+    border-radius: 0;
+    display: block;
+    margin: 0 auto;
 }
 
 .logo-image-card p {
@@ -402,7 +405,14 @@ body {
     border-radius: 20px;
 }
 
-/* ===== АДАПТИВНОСТЬ ===== */
+/* ===== ОТСТУПЫ ДЛЯ ЛИЧНЫХ КАБИНЕТОВ ===== */
+.driver-container,
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
 @media (max-width: 768px) {
     .main-content {
         flex-direction: column;
@@ -413,5 +423,9 @@ body {
     .footer-content {
         gap: 15px;
         flex-direction: column;
+    }
+    .driver-container,
+    .profile-container {
+        padding: 20px 15px;
     }
 }
