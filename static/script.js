@@ -2,6 +2,7 @@ console.log('Script loaded');
 
 // ===== КАРТА =====
 let map;
+let userMarker = null;
 
 function initMap() {
     if (typeof L === 'undefined') {
@@ -15,32 +16,161 @@ function initMap() {
         return;
     }
     
-    map = L.map('map').setView([59.9343, 30.3351], 12);
+    // Центр по умолчанию (Москва)
+    map = L.map('map').setView([55.751244, 37.618423], 12);
     
+    // Слой карты
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; CartoDB',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
         subdomains: 'abcd',
-        maxZoom: 19,
-        minZoom: 1
+        maxZoom: 19
     }).addTo(map);
     
     console.log('Карта инициализирована');
 }
 
-// Запуск карты после загрузки страницы
+// Поиск адреса с центрированием карты
+window.searchAddress = function() {
+    const query = document.getElementById('addressSearch').value;
+    if (!query) {
+        alert('Введите адрес');
+        return;
+    }
+    
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                map.setView([lat, lon], 15);
+                
+                // Добавляем маркер
+                if (userMarker) map.removeLayer(userMarker);
+                userMarker = L.marker([lat, lon]).addTo(map)
+                    .bindPopup(`📍 ${query}`).openPopup();
+            } else {
+                alert('Адрес не найден');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка поиска:', error);
+            alert('Ошибка при поиске адреса');
+        });
+};
+
+// Геолокация (GPS)
+window.setCurrentLocation = function() {
+    if (!navigator.geolocation) {
+        alert('Геолокация не поддерживается вашим браузером');
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            map.setView([lat, lng], 15);
+            
+            if (userMarker) map.removeLayer(userMarker);
+            userMarker = L.marker([lat, lng]).addTo(map)
+                .bindPopup('📍 Вы здесь').openPopup();
+        },
+        function(error) {
+            console.error('Ошибка геолокации:', error);
+            alert('Не удалось определить местоположение. Проверьте разрешения в браузере.');
+        }
+    );
+};
+
+// Функции для кнопок
+window.makePhoneCall = function() {
+    window.location.href = 'tel:+78121234567';
+};
+
+window.openOrderForm = function() {
+    const modal = document.getElementById('orderModal');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.closeOrderModal = function() {
+    const modal = document.getElementById('orderModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.openCommentModal = function() {
+    const modal = document.getElementById('commentModal');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.closeCommentModal = function() {
+    const modal = document.getElementById('commentModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.submitOrder = async function() {
+    const name = document.getElementById('orderName').value;
+    const phone = document.getElementById('orderPhone').value;
+    const pickup = document.getElementById('orderPickup').value;
+    const dropoff = document.getElementById('orderDropoff').value;
+    const tariff = document.getElementById('orderTariff').value;
+    
+    if (!name || !phone || !pickup || !dropoff) {
+        alert('Заполните все поля');
+        return;
+    }
+    
+    let price = 250;
+    if (tariff.includes('Эконом')) price = 250;
+    if (tariff.includes('Комфорт')) price = 350;
+    if (tariff.includes('Бизнес')) price = 500;
+    
+    const userId = localStorage.getItem('userId');
+    const formData = new FormData();
+    formData.append('pickup', pickup);
+    formData.append('dropoff', dropoff);
+    formData.append('tariff', tariff);
+    formData.append('price', price);
+    
+    if (userId) {
+        formData.append('user_id', userId);
+    } else {
+        formData.append('guest_name', name);
+        formData.append('guest_phone', phone);
+        formData.append('guest_email', '');
+    }
+    
+    try {
+        await fetch('/save-order', { method: 'POST', body: formData });
+        alert(`Заказ оформлен!\n\nОткуда: ${pickup}\nКуда: ${dropoff}\nСтоимость: ${price} ₽`);
+        closeOrderModal();
+        
+        document.getElementById('orderName').value = '';
+        document.getElementById('orderPhone').value = '';
+        document.getElementById('orderPickup').value = '';
+        document.getElementById('orderDropoff').value = '';
+    } catch (error) {
+        alert('Ошибка при оформлении заказа');
+    }
+};
+
+window.sendComment = function() {
+    const comment = document.getElementById('driverComment').value;
+    if (comment) {
+        alert('Комментарий отправлен');
+        document.getElementById('driverComment').value = '';
+        closeCommentModal();
+    } else {
+        alert('Введите комментарий');
+    }
+};
+
+// Запуск карты
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname === '/') {
         initMap();
     }
 });
-
-// Проверка загрузки карты через 2 секунды
-setTimeout(function() {
-    if (!map && window.location.pathname === '/') {
-        console.log('Пробуем перезагрузить карту...');
-        initMap();
-    }
-}, 2000);
 
 // ===== ВХОД ВОДИТЕЛЯ =====
 if (window.location.pathname === '/login') {
@@ -54,128 +184,147 @@ if (window.location.pathname === '/login') {
     }
 }
 
-// ===== КАБИНЕТ ВОДИТЕЛЯ =====
+// ===== КАБИНЕТ ВОДИТЕЛЯ (ПОЛНЫЙ) =====
 if (window.location.pathname === '/driver-dashboard') {
     if (!localStorage.getItem('driver')) {
         window.location.href = '/login';
     }
+    
+    loadDriverOrders();
+    
+    async function loadDriverOrders() {
+        try {
+            const response = await fetch('/user-orders/all');
+            const orders = await response.json();
+            const container = document.getElementById('ordersList');
+            
+            if (orders.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">Нет активных заказов</div>';
+                return;
+            }
+            
+            let html = '';
+            orders.forEach(order => {
+                html += `
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div>📍 ${order.pickup} → ${order.dropoff}</div>
+                            <div>💰 Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
+                            <button class="btn btn-sm btn-success mt-2" onclick="acceptOrder(${order.id})">Принять</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        } catch (error) {
+            console.error('Ошибка загрузки заказов:', error);
+        }
+    }
+    
+    window.acceptOrder = function(id) {
+        alert(`Заказ #${id} принят! Еду к пассажиру.`);
+        loadDriverOrders();
+    };
 }
 
 // ===== ВХОД ПОЛЬЗОВАТЕЛЯ =====
 if (window.location.pathname === '/login-user') {
     const form = document.getElementById('loginUserForm');
     if (form) {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
-            localStorage.setItem('user', 'true');
-            window.location.href = '/user-profile';
+            
+            const formData = new FormData();
+            formData.append('email', document.getElementById('email').value);
+            formData.append('password', document.getElementById('password').value);
+            
+            const response = await fetch('/login-user', { method: 'POST', body: formData });
+            const result = await response.json();
+            
+            if (result.success) {
+                localStorage.setItem('userId', result.user_id);
+                localStorage.setItem('userName', result.fullname);
+                alert(`Добро пожаловать, ${result.fullname}!`);
+                window.location.href = '/user-profile';
+            } else {
+                alert(result.error);
+            }
         });
     }
 }
 
-// ===== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ =====
+// ===== РЕГИСТРАЦИЯ =====
+if (window.location.pathname === '/register') {
+    const form = document.getElementById('registerForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('fullname', document.getElementById('fullname').value);
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('password', document.getElementById('password').value);
+            
+            const response = await fetch('/register', { method: 'POST', body: formData });
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Регистрация успешна! Теперь войдите.');
+                window.location.href = '/login-user';
+            } else {
+                alert(result.error || 'Ошибка регистрации');
+            }
+        });
+    }
+}
+
+// ===== ЛИЧНЫЙ КАБИНЕТ ПОЛЬЗОВАТЕЛЯ (С ИСТОРИЕЙ) =====
 if (window.location.pathname === '/user-profile') {
-    if (!localStorage.getItem('user')) {
+    const userId = localStorage.getItem('userId');
+    const userName = localStorage.getItem('userName');
+    
+    if (!userId) {
         window.location.href = '/login-user';
     }
-}
-
-// ===== ФУНКЦИИ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ =====
-function makePhoneCall() {
-    window.location.href = 'tel:+78121234567';
-}
-
-function openOrderForm() {
-    const modal = document.getElementById('orderModal');
-    if (modal) modal.style.display = 'flex';
-}
-
-function closeOrderModal() {
-    const modal = document.getElementById('orderModal');
-    if (modal) modal.style.display = 'none';
-}
-
-function openCommentModal() {
-    const modal = document.getElementById('commentModal');
-    if (modal) modal.style.display = 'flex';
-}
-
-function closeCommentModal() {
-    const modal = document.getElementById('commentModal');
-    if (modal) modal.style.display = 'none';
-}
-
-function submitOrder() {
-    const name = document.getElementById('orderName').value;
-    const phone = document.getElementById('orderPhone').value;
-    const pickup = document.getElementById('orderPickup').value;
-    const dropoff = document.getElementById('orderDropoff').value;
     
-    if (!name || !phone || !pickup || !dropoff) {
-        alert('Заполните все поля');
-        return;
-    }
+    document.getElementById('userFullname').innerText = userName;
     
-    alert(`Заказ оформлен!\n\nОткуда: ${pickup}\nКуда: ${dropoff}\nВодитель скоро прибудет!`);
-    closeOrderModal();
+    loadUserOrders();
     
-    document.getElementById('orderName').value = '';
-    document.getElementById('orderPhone').value = '';
-    document.getElementById('orderPickup').value = '';
-    document.getElementById('orderDropoff').value = '';
-}
-
-function sendComment() {
-    const comment = document.getElementById('driverComment').value;
-    if (comment) {
-        alert('Комментарий отправлен');
-        document.getElementById('driverComment').value = '';
-        closeCommentModal();
-    } else {
-        alert('Введите комментарий');
-    }
-}
-
-function searchAddress() {
-    const query = document.getElementById('addressSearch').value;
-    if (!query) return;
-    
-    if (map) {
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lon = parseFloat(data[0].lon);
-                    map.setView([lat, lon], 15);
-                } else {
-                    alert('Адрес не найден');
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка поиска:', error);
-                alert('Ошибка при поиске адреса');
+    async function loadUserOrders() {
+        try {
+            const response = await fetch(`/user-orders/${userId}`);
+            const orders = await response.json();
+            const container = document.getElementById('ordersHistory');
+            
+            if (orders.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">У вас пока нет заказов</div>';
+                return;
+            }
+            
+            let html = '';
+            orders.forEach(order => {
+                html += `
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div>${order.date}</div>
+                            <div>📍 ${order.pickup} → ${order.dropoff}</div>
+                            <div>💰 ${order.tariff} | ${order.price} ₽</div>
+                            <div>📌 Статус: ${order.status}</div>
+                        </div>
+                    </div>
+                `;
             });
-    } else {
-        alert('Карта ещё не загружена');
-    }
-}
-
-function setCurrentLocation() {
-    if (!map) {
-        alert('Карта ещё не загружена');
-        return;
+            container.innerHTML = html;
+            document.getElementById('totalOrders').innerText = orders.length;
+        } catch (error) {
+            console.error('Ошибка загрузки истории:', error);
+        }
     }
     
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            map.setView([lat, lng], 15);
-        }, function() {
-            alert('Не удалось определить местоположение');
-        });
-    } else {
-        alert('Геолокация не поддерживается');
-    }
+    document.getElementById('logoutUserBtn').onclick = function() {
+        localStorage.clear();
+        window.location.href = '/';
+    };
 }
