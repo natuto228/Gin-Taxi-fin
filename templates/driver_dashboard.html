@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кабинет водителя - Gin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/">Gin</a>
+        <a href="/" class="btn btn-outline-light btn-sm" id="logoutBtn">Выйти</a>
+    </div>
+</nav>
+
+<div class="driver-container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="driver-stats">
+                <div class="driver-avatar">D</div>
+                <h4 class="driver-title">Водитель</h4>
+                <button id="statusBtn" class="driver-status-btn online">Онлайн</button>
+                <hr class="driver-hr">
+                <h3 id="earnings" class="driver-earnings">0 ₽</h3>
+                <p class="driver-subtitle">Заработано сегодня</p>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="driver-stats">
+                <h5 class="driver-orders-title">Новые заказы</h5>
+                <div id="ordersList">
+                    <div class="driver-loading">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/script.js"></script>
+
+</body>
+</html>

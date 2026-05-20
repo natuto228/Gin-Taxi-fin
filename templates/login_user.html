@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход водителя - Gin</title>
+    <title>Вход пользователя - Gin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
@@ -14,22 +14,22 @@
 
 <div class="login-card">
     <div class="text-center">
-        <div class="login-logo-circle">D</div>
-        <h3 class="login-title">Вход водителя</h3>
+        <div class="login-logo-circle">U</div>
+        <h3 class="login-title">Вход пользователя</h3>
     </div>
     
-    <form id="driverLoginForm">
-        <label class="login-label">Логин</label>
-        <input type="text" id="driverLogin" class="login-input" required>
+    <form id="loginUserForm">
+        <label class="login-label">Email</label>
+        <input type="email" id="email" class="login-input" required>
         
         <label class="login-label">Пароль</label>
-        <input type="password" id="driverPassword" class="login-input" required>
+        <input type="password" id="password" class="login-input" required>
         
         <button type="submit" class="login-btn">Войти</button>
     </form>
     
     <div class="login-test-info">
-        <span>Тест: driver / 12345</span>
+        <a href="/register">Нет аккаунта? Зарегистрироваться</a>
     </div>
 </div>
 

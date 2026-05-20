@@ -71,7 +71,6 @@ body {
     display: block;
     border: none;
     outline: none;
-    box-shadow: none;
 }
 
 .logo-image-card p {
@@ -397,6 +396,253 @@ body {
     color: black;
     text-decoration: none;
     font-size: 12px;
+}
+
+/* ===== КАБИНЕТ ВОДИТЕЛЯ ===== */
+.driver-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.driver-stats {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+.driver-avatar {
+    width: 60px;
+    height: 60px;
+    background: #87CEFA;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 24px;
+    color: white;
+    font-weight: bold;
+}
+
+.driver-title {
+    font-size: 14px;
+    margin-bottom: 15px;
+    color: black;
+}
+
+.driver-status-btn {
+    border: none;
+    padding: 8px 20px;
+    border-radius: 30px;
+    color: white;
+    font-family: 'SouthGhetto', sans-serif;
+    font-size: 12px;
+    width: 100%;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.driver-status-btn.online {
+    background: #28a745;
+}
+
+.driver-status-btn.offline {
+    background: #dc3545;
+}
+
+.driver-hr {
+    margin: 15px 0;
+    border-top: 1px solid #eee;
+}
+
+.driver-earnings {
+    font-size: 22px;
+    color: #87CEFA;
+    margin-bottom: 5px;
+}
+
+.driver-subtitle {
+    font-size: 11px;
+    color: #666;
+}
+
+.driver-orders-title {
+    font-size: 14px;
+    margin-bottom: 20px;
+    color: black;
+}
+
+.driver-loading,
+.driver-no-orders {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.order-item {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 12px;
+    border-left: 3px solid #87CEFA;
+    transition: all 0.3s ease;
+}
+
+.order-item:hover {
+    transform: translateX(3px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.order-pickup,
+.order-dropoff {
+    font-size: 11px;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.order-tariff {
+    background: #87CEFA;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    display: inline-block;
+}
+
+.order-price {
+    font-size: 12px;
+    color: #333;
+    margin-top: 5px;
+}
+
+.order-accept-btn {
+    background: #28a745;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 20px;
+    color: white;
+    font-family: 'SouthGhetto', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.order-accept-btn:hover {
+    background: #218838;
+    transform: scale(1.02);
+}
+
+/* ===== ЛИЧНЫЙ КАБИНЕТ ПОЛЬЗОВАТЕЛЯ ===== */
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    background: #87CEFA;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 32px;
+    color: white;
+}
+
+.profile-name {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.profile-role {
+    color: #999;
+    font-size: 11px;
+    margin-bottom: 20px;
+}
+
+.profile-stats {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #87CEFA;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #666;
+}
+
+.profile-hr {
+    margin: 20px 0;
+    border-top: 1px solid #eee;
+}
+
+.profile-order-btn {
+    background: #87CEFA;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'SouthGhetto', sans-serif;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.profile-order-btn:hover {
+    background: #6bb5e0;
+}
+
+.profile-orders-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+.profile-orders-title {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.profile-loading {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
 }
 
 @media (max-width: 768px) {
