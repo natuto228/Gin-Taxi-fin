@@ -1,3 +1,8 @@
+@font-face {
+    font-family: 'SouthGhetto';
+    src: url('https://fonts.cdnfonts.com/css/southghetto') format('woff2');
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -5,11 +10,10 @@
 }
 
 body {
-    font-family: 'SouthGhetto', 'Segoe UI', sans-serif;
+    font-family: 'SouthGhetto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: white;
     min-height: 100vh;
     color: black;
-    text-transform: uppercase;
 }
 
 .page-container {
@@ -18,26 +22,27 @@ body {
     min-height: 100vh;
 }
 
+/* ===== ШАПКА ===== */
 .header {
-    background: #87CEFA;
-    padding: 12px 25px;
+    background: white;
+    padding: 15px 30px;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 15px;
+    border-bottom: 1px solid #eee;
 }
 
-.user-status a, .lang-btn {
+.user-status {
+    font-size: 14px;
+    color: black;
+}
+
+.user-status a {
     color: black;
     text-decoration: none;
-    font-size: 14px;
-    margin-left: 15px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: 'SouthGhetto', sans-serif;
 }
 
+/* ===== ОСНОВНОЙ КОНТЕНТ ===== */
 .main-content {
     display: flex;
     flex: 1;
@@ -46,50 +51,57 @@ body {
 }
 
 .sidebar {
-    width: 20%;
+    width: 25%;
+    background: transparent;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
 }
 
+/* ===== ЛОГО ===== */
 .logo-image-card {
     text-align: center;
     cursor: pointer;
-    margin-bottom: 10px;
+    background: transparent;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
 }
 
 .logo-image-card img {
-    width: 100%;
-    max-width: 180px;
+    max-width: 100%;
     height: auto;
     display: block;
-    margin: 0 auto;
     border: none;
     outline: none;
+    box-shadow: none;
 }
 
 .logo-image-card p {
-    margin-top: 8px;
+    margin-top: 10px;
     font-size: 14px;
     color: black;
 }
 
+/* ===== КНОПКИ ===== */
 .action-card {
     background: #87CEFA;
     border-radius: 8px;
-    padding: 10px 12px;
+    padding: 12px 15px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .action-card:hover {
     background: #6bb5e0;
     transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .action-card h3 {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: normal;
     color: white;
     margin-bottom: 0;
@@ -98,41 +110,49 @@ body {
 .driver-card {
     background: #87CEFA;
     border-radius: 0 30px 30px 0;
-    padding: 10px 15px;
+    padding: 12px 20px;
     margin-left: -20px;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     width: calc(100% + 20px);
-    margin-top: auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.2);
 }
 
 .driver-card:hover {
     background: #6bb5e0;
     transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .driver-card h3 {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: normal;
     color: white;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
 }
 
 .driver-card p {
-    font-size: 10px;
+    font-size: 11px;
     color: rgba(255,255,255,0.8);
 }
 
+/* ===== КАРТА ===== */
 .map-container {
-    width: 80%;
+    width: 75%;
+    background: #f5f5f5;
+    border-radius: 12px;
+    overflow: hidden;
     position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 #map {
-    height: 580px;
+    height: 100%;
     width: 100%;
-    border-radius: 12px;
+    min-height: 600px;
 }
 
 .search-overlay {
@@ -141,33 +161,44 @@ body {
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
-    display: flex;
-    gap: 8px;
     width: 80%;
     max-width: 400px;
+    display: flex;
+    gap: 8px;
+    background: rgba(255,255,255,0.95);
+    padding: 6px;
+    border-radius: 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .search-overlay input {
     flex: 1;
     padding: 10px 15px;
-    border-radius: 30px;
     border: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border-radius: 30px;
+    font-size: 13px;
+    background: white;
     font-family: 'SouthGhetto', sans-serif;
-    font-size: 12px;
+    color: black;
+    outline: none;
 }
 
 .search-overlay button {
     background: #87CEFA;
     border: none;
     border-radius: 30px;
-    padding: 8px 16px;
+    padding: 6px 18px;
+    color: white;
     cursor: pointer;
     font-family: 'SouthGhetto', sans-serif;
-    color: white;
+    transition: all 0.3s ease;
 }
 
-.geolocation-btn {
+.search-overlay button:hover {
+    background: #6bb5e0;
+}
+
+.map-location-btn {
     position: absolute;
     bottom: 20px;
     right: 20px;
@@ -178,18 +209,27 @@ body {
     width: 44px;
     height: 44px;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    font-size: 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #87CEFA;
 }
 
-.geolocation-btn:hover {
+.map-location-btn:hover {
+    background: #f0f0f0;
     transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
+/* ===== ПОДВАЛ ===== */
 .footer {
-    background: #87CEFA;
+    background: white;
+    border-top: 1px solid #ddd;
     text-align: center;
-    padding: 12px;
+    padding: 15px 20px;
     font-size: 11px;
     margin-top: auto;
 }
@@ -197,87 +237,16 @@ body {
 .footer-content {
     display: flex;
     justify-content: center;
-    gap: 25px;
+    gap: 30px;
     flex-wrap: wrap;
 }
 
 .footer-content span {
-    color: black;
+    color: #999;
 }
 
-.modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    width: 380px;
-    max-width: 90%;
-    z-index: 1000;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    border: 1px solid #ddd;
-}
-
-.modal h3 {
-    margin-bottom: 15px;
-    color: black;
-    font-size: 16px;
-    text-align: center;
-}
-
-.modal input, .modal select, .modal textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-family: 'SouthGhetto', sans-serif;
-    font-size: 12px;
-}
-
-.modal button {
-    background: #87CEFA;
-    border: none;
-    padding: 10px;
-    border-radius: 6px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    font-family: 'SouthGhetto', sans-serif;
-    font-size: 12px;
-    margin-top: 5px;
-}
-
-.modal button:hover {
-    background: #6bb5e0;
-}
-
-.modal .btn-secondary {
-    background: #e0e0e0;
-    color: black;
-    margin-top: 8px;
-}
-
-.modal .btn-secondary:hover {
-    background: #ccc;
-}
-
-.modal-link {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 11px;
-}
-
-.modal-link a {
-    color: #87CEFA;
-    text-decoration: none;
-}
-
-.overlay {
+/* ===== МОДАЛЬНЫЕ ОКНА ===== */
+.modal-custom {
     display: none;
     position: fixed;
     top: 0;
@@ -285,30 +254,411 @@ body {
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,0.4);
-    z-index: 999;
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
 }
 
-.order-card {
-    background: #f8f9fa;
-    border-radius: 6px;
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.modal-content h3 {
+    margin-bottom: 15px;
+    color: black;
+    font-size: 16px;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
     padding: 10px;
-    margin-bottom: 8px;
-    border-left: 3px solid #87CEFA;
-    font-size: 11px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'SouthGhetto', sans-serif;
+    background: white;
+    color: black;
 }
 
-.logout-btn {
-    background: #dc3545;
+.btn-primary {
+    background: #87CEFA;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'SouthGhetto', sans-serif;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #6bb5e0;
+}
+
+.btn-secondary {
+    background: #e0e0e0;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    color: black;
+    cursor: pointer;
+    font-family: 'SouthGhetto', sans-serif;
+    width: 100%;
+    margin-top: 8px;
+}
+
+/* ===== СТРАНИЦЫ ВХОДА И РЕГИСТРАЦИИ ===== */
+.login-body {
+    background: white;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    width: 100%;
+    max-width: 360px;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.login-logo-circle {
+    width: 60px;
+    height: 60px;
+    background: #87CEFA;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 28px;
+    color: white;
+    font-weight: bold;
+}
+
+.login-title {
+    text-align: center;
+    margin-bottom: 20px;
+    color: black;
+    font-size: 16px;
+}
+
+.login-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.login-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-family: 'SouthGhetto', sans-serif;
+    background: white;
+    color: black;
+}
+
+.login-btn {
+    background: #87CEFA;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'SouthGhetto', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+    background: #6bb5e0;
+}
+
+.login-test-info {
+    text-align: center;
+    margin-top: 15px;
+    color: #999;
+    font-size: 10px;
+}
+
+.login-test-info a {
+    color: #999;
+    text-decoration: none;
+}
+
+.header-back {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: black;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+/* ===== ЛИЧНЫЙ КАБИНЕТ ПОЛЬЗОВАТЕЛЯ ===== */
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    background: #87CEFA;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 32px;
+    color: white;
+}
+
+.profile-name {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.profile-role {
+    color: #999;
+    font-size: 11px;
+    margin-bottom: 20px;
+}
+
+.profile-stats {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
     margin-top: 15px;
 }
 
-#pricePreview {
-    margin: 8px 0;
-    font-size: 12px;
+.stat-number {
+    font-size: 24px;
     font-weight: bold;
     color: #87CEFA;
 }
 
+.stat-label {
+    font-size: 11px;
+    color: #666;
+}
+
+.profile-hr {
+    margin: 20px 0;
+    border-top: 1px solid #eee;
+}
+
+.profile-order-btn {
+    background: #87CEFA;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'SouthGhetto', sans-serif;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.profile-order-btn:hover {
+    background: #6bb5e0;
+}
+
+.profile-orders-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+.profile-orders-title {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.profile-loading {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* ===== КАБИНЕТ ВОДИТЕЛЯ ===== */
+.driver-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.driver-stats {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+.driver-avatar {
+    width: 60px;
+    height: 60px;
+    background: #87CEFA;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 24px;
+    color: white;
+    font-weight: bold;
+}
+
+.driver-title {
+    font-size: 14px;
+    margin-bottom: 15px;
+    color: black;
+}
+
+.driver-status-btn {
+    border: none;
+    padding: 8px 20px;
+    border-radius: 30px;
+    color: white;
+    font-family: 'SouthGhetto', sans-serif;
+    font-size: 12px;
+    width: 100%;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.driver-status-btn.online {
+    background: #28a745;
+}
+
+.driver-status-btn.offline {
+    background: #dc3545;
+}
+
+.driver-hr {
+    margin: 15px 0;
+    border-top: 1px solid #eee;
+}
+
+.driver-earnings {
+    font-size: 22px;
+    color: #87CEFA;
+    margin-bottom: 5px;
+}
+
+.driver-subtitle {
+    font-size: 11px;
+    color: #666;
+}
+
+.driver-orders-title {
+    font-size: 14px;
+    margin-bottom: 20px;
+    color: black;
+}
+
+.driver-loading,
+.driver-no-orders {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.order-item {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 12px;
+    border-left: 3px solid #87CEFA;
+    transition: all 0.3s ease;
+}
+
+.order-item:hover {
+    transform: translateX(3px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.order-pickup,
+.order-dropoff {
+    font-size: 11px;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.order-tariff {
+    background: #87CEFA;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    display: inline-block;
+}
+
+.order-price {
+    font-size: 12px;
+    color: #333;
+    margin-top: 5px;
+}
+
+.order-accept-btn {
+    background: #28a745;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 20px;
+    color: white;
+    font-family: 'SouthGhetto', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.order-accept-btn:hover {
+    background: #218838;
+    transform: scale(1.02);
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 768px) {
     .main-content {
         flex-direction: column;
@@ -322,7 +672,11 @@ body {
         width: 100%;
     }
     .footer-content {
-        gap: 12px;
+        gap: 15px;
+        flex-direction: column;
+    }
+    .profile-container .row,
+    .driver-container .row {
         flex-direction: column;
     }
 }
