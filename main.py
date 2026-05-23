@@ -34,6 +34,11 @@ def init_database():
         )
     ''')
     
+    try:
+        cursor.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT \'user\'')
+    except Exception:
+        pass
+    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS orders (
             id SERIAL PRIMARY KEY,
@@ -52,6 +57,15 @@ def init_database():
     ''')
     
     cursor.execute('''
+        CREATE TABLE IF NOT EXISTS driver_locations (
+            driver_id INTEGER PRIMARY KEY,
+            lat REAL,
+            lng REAL,
+            updated_at TIMESTAMP
+        )
+    ''')
+    
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS applications (
             id SERIAL PRIMARY KEY,
             fullname TEXT,
@@ -65,16 +79,16 @@ def init_database():
     cursor.execute('SELECT * FROM users WHERE email = %s', ('user@gin.ru',))
     if not cursor.fetchone():
         cursor.execute('''
-            INSERT INTO users (fullname, phone, email, password, role, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        ''', ('Тестовый Пользователь', '+79991234567', 'user@gin.ru', '123456', 'user', datetime.now()))
+            INSERT INTO users (fullname, phone, email, password, created_at)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', ('Тестовый Пользователь', '+79991234567', 'user@gin.ru', '123456', datetime.now()))
     
     cursor.execute('SELECT * FROM users WHERE email = %s', ('driver@gin.ru',))
     if not cursor.fetchone():
         cursor.execute('''
-            INSERT INTO users (fullname, phone, email, password, role, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        ''', ('Тестовый Водитель', '+79998887766', 'driver@gin.ru', '12345', 'driver', datetime.now()))
+            INSERT INTO users (fullname, phone, email, password, created_at)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', ('Тестовый Водитель', '+79998887766', 'driver@gin.ru', '12345', datetime.now()))
     
     conn.commit()
     cursor.close()
@@ -101,9 +115,9 @@ async def register(
     cursor = conn.cursor()
     try:
         cursor.execute('''
-            INSERT INTO users (fullname, phone, email, password, role, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (fullname, phone, email, password, 'user', datetime.now()))
+            INSERT INTO users (fullname, phone, email, password, created_at)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', (fullname, phone, email, password, datetime.now()))
         conn.commit()
         return {"success": True}
     except Exception:
