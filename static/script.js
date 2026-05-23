@@ -253,15 +253,9 @@ var driverForm = document.getElementById('driverLoginForm');
 if (driverForm) {
     driverForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        var login = document.getElementById('driverLogin').value;
-        var password = document.getElementById('driverPassword').value;
-        
-        if (login === 'driver' && password === '12345') {
-            localStorage.setItem('driverLoggedIn', 'true');
-            window.location.href = '/driver-dashboard';
-        } else {
-            alert('Неверный логин или пароль');
-        }
+        // ВРЕМЕННО: любой логин и пароль подходят
+        localStorage.setItem('driverLoggedIn', 'true');
+        window.location.href = '/driver-dashboard';
     });
 }
 
