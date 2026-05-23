@@ -15,15 +15,15 @@
     <header class="header">
         <div class="user-status">
             <button class="lang-btn" id="langBtn">English</button>
-            <a href="#" onclick="showLoginModal()">Войти</a>
-            <a href="#" onclick="showRegisterModal()">Регистрация</a>
+            <a href="#" id="showLoginBtn">Войти</a>
+            <a href="#" id="showRegisterBtn">Регистрация</a>
         </div>
     </header>
     
     <div class="main-content">
         
         <aside class="sidebar">
-            <div class="logo-image-card" onclick="location.reload()">
+            <div class="logo-image-card">
                 <img src="/static/gin_photo.jpg" alt="Gin">
                 <p>Gin Taxi</p>
             </div>
@@ -63,7 +63,7 @@
     
 </div>
 
-<!-- Модалки -->
+<!-- Модальные окна -->
 <div id="orderModal" class="modal">
     <h3>Заказ такси</h3>
     <input type="text" id="orderName" placeholder="ФИО">
@@ -77,14 +77,14 @@
     </select>
     <div id="pricePreview"></div>
     <button id="submitOrderBtn">Заказать такси</button>
-    <button onclick="closeOrderModal()" class="btn-secondary">Отмена</button>
+    <button id="closeOrderBtn" class="btn-secondary">Отмена</button>
 </div>
 
 <div id="commentModal" class="modal">
     <h3>Комментарий водителю</h3>
     <textarea id="driverComment" rows="4" placeholder="Ваши пожелания..."></textarea>
     <button id="sendCommentBtn">Отправить</button>
-    <button onclick="closeCommentModal()" class="btn-secondary">Отмена</button>
+    <button id="closeCommentBtn" class="btn-secondary">Отмена</button>
 </div>
 
 <div id="loginModal" class="modal">
@@ -92,8 +92,8 @@
     <input type="email" id="loginEmail" placeholder="Email">
     <input type="password" id="loginPassword" placeholder="Пароль">
     <button id="doLoginBtn">Войти</button>
-    <button onclick="closeLoginModal()" class="btn-secondary">Отмена</button>
-    <div class="modal-link"><a href="#" onclick="closeLoginModal(); showRegisterModal();">Нет аккаунта? Зарегистрироваться</a></div>
+    <button id="closeLoginBtn" class="btn-secondary">Отмена</button>
+    <div class="modal-link"><a href="#" id="switchToRegister">Нет аккаунта? Зарегистрироваться</a></div>
 </div>
 
 <div id="registerModal" class="modal">
@@ -103,16 +103,16 @@
     <input type="email" id="regEmail" placeholder="Email">
     <input type="password" id="regPassword" placeholder="Пароль">
     <button id="doRegisterBtn">Зарегистрироваться</button>
-    <button onclick="closeRegisterModal()" class="btn-secondary">Отмена</button>
-    <div class="modal-link"><a href="#" onclick="closeRegisterModal(); showLoginModal();">Уже есть аккаунт? Войти</a></div>
+    <button id="closeRegisterBtn" class="btn-secondary">Отмена</button>
+    <div class="modal-link"><a href="#" id="switchToLogin">Уже есть аккаунт? Войти</a></div>
 </div>
 
 <div id="profileModal" class="modal" style="width: 450px;">
     <h3>Мой профиль</h3>
     <div id="profileInfo"></div>
     <div id="ordersHistory"></div>
-    <button onclick="logout()" class="logout-btn">Выйти</button>
-    <button onclick="closeProfileModal()" class="btn-secondary">Закрыть</button>
+    <button id="logoutBtn" class="logout-btn">Выйти</button>
+    <button id="closeProfileBtn" class="btn-secondary">Закрыть</button>
 </div>
 
 <div id="overlay" class="overlay"></div>

@@ -4,18 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мой профиль - Gin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.cdnfonts.com/css/southghetto" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
 <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container">
-        <a class="navbar-brand" href="/">Gin Taxi</a>
+        <a class="navbar-brand" href="/">Gin</a>
         <div>
             <span class="text-white me-3" id="userNameDisplay"></span>
-            <a href="/" class="btn btn-outline-light btn-sm" id="logoutUserBtn">Выйти</a>
+            <a href="/" class="btn btn-outline-light btn-sm" onclick="localStorage.clear()">Выйти</a>
         </div>
     </div>
 </nav>
@@ -23,27 +22,24 @@
 <div class="profile-container">
     <div class="row">
         <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i class="fas fa-user-circle fa-4x mb-3" style="color:#87CEFA;"></i>
-                    <h4 id="userFullname"></h4>
-                    <p class="text-muted">Пассажир</p>
-                    <hr>
-                    <div class="alert alert-info">
-                        Всего поездок: <strong id="totalOrders">0</strong>
-                    </div>
-                    <a href="/" class="btn btn-primary w-100">Заказать такси</a>
+            <div class="profile-card">
+                <div class="profile-avatar">👤</div>
+                <h4 id="userFullname" class="profile-name"></h4>
+                <p class="profile-role">Пассажир</p>
+                <hr>
+                <div class="profile-stats">
+                    <div class="stat-number" id="totalOrders">0</div>
+                    <p class="stat-label">Всего поездок</p>
                 </div>
+                <a href="/" class="profile-order-btn">Заказать такси</a>
             </div>
         </div>
         
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5>История моих заказов</h5>
-                </div>
-                <div class="card-body" id="ordersHistory">
-                    <div class="alert alert-info">Загрузка...</div>
+            <div class="profile-orders-card">
+                <h5 class="profile-orders-title">История моих заказов</h5>
+                <div id="ordersHistory">
+                    <div class="profile-loading">Загрузка...</div>
                 </div>
             </div>
         </div>
