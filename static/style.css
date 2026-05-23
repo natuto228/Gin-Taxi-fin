@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: 'SouthGhetto', 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: white;
     min-height: 100vh;
     color: black;
@@ -154,7 +154,6 @@ body {
     border-radius: 40px;
     border: none;
     width: 260px;
-    font-family: 'SouthGhetto', sans-serif;
     font-size: 12px;
     outline: none;
 }
@@ -166,7 +165,6 @@ body {
     padding: 8px 22px;
     color: white;
     cursor: pointer;
-    font-family: 'SouthGhetto', sans-serif;
 }
 
 .geo-btn {
@@ -222,7 +220,6 @@ body {
     margin: 8px 0;
     border: 1px solid #ddd;
     border-radius: 6px;
-    font-family: 'SouthGhetto', sans-serif;
 }
 
 .modal button {
@@ -233,7 +230,6 @@ body {
     color: white;
     cursor: pointer;
     width: 100%;
-    font-family: 'SouthGhetto', sans-serif;
     margin-top: 8px;
 }
 
