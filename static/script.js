@@ -4,9 +4,12 @@ var userId = localStorage.getItem('userId');
 var userName = localStorage.getItem('userName');
 var currentLang = 'ru';
 
-// ========== КАРТА ==========
+// ========== КАРТА (ТОЛЬКО ЯНДЕКС) ==========
 function initMap() {
-    if (typeof ymaps === 'undefined') { setTimeout(initMap, 500); return; }
+    if (typeof ymaps === 'undefined') {
+        setTimeout(initMap, 500);
+        return;
+    }
     ymaps.ready(function() {
         map = new ymaps.Map('map', {
             center: [55.751244, 37.618423],
@@ -18,9 +21,12 @@ function initMap() {
             var pickupInput = document.getElementById('orderPickup');
             if (pickupInput) pickupInput.value = coords[0].toFixed(4) + ', ' + coords[1].toFixed(4);
         });
+        console.log('Яндекс карта загружена');
     });
 }
-initMap();
+
+// Запускаем карту
+setTimeout(initMap, 100);
 
 // ========== ПОИСК АДРЕСА ==========
 var searchBtn = document.getElementById('searchAddressBtn');
@@ -61,20 +67,58 @@ if (langBtn) {
 }
 
 // ========== ОБЩИЕ ФУНКЦИИ ==========
-function showOverlay() { document.getElementById('overlay').style.display = 'block'; }
-function hideOverlay() { document.getElementById('overlay').style.display = 'none'; }
+function showOverlay() { 
+    var overlay = document.getElementById('overlay');
+    if (overlay) overlay.style.display = 'block';
+}
+function hideOverlay() { 
+    var overlay = document.getElementById('overlay');
+    if (overlay) overlay.style.display = 'none';
+}
 
-function openOrderModal() { document.getElementById('orderModal').style.display = 'block'; showOverlay(); }
-function closeOrderModal() { document.getElementById('orderModal').style.display = 'none'; hideOverlay(); }
+function openOrderModal() { 
+    var modal = document.getElementById('orderModal');
+    if (modal) modal.style.display = 'block';
+    showOverlay();
+}
+function closeOrderModal() { 
+    var modal = document.getElementById('orderModal');
+    if (modal) modal.style.display = 'none';
+    hideOverlay();
+}
 
-function openCommentModal() { document.getElementById('commentModal').style.display = 'block'; showOverlay(); }
-function closeCommentModal() { document.getElementById('commentModal').style.display = 'none'; hideOverlay(); }
+function openCommentModal() { 
+    var modal = document.getElementById('commentModal');
+    if (modal) modal.style.display = 'block';
+    showOverlay();
+}
+function closeCommentModal() { 
+    var modal = document.getElementById('commentModal');
+    if (modal) modal.style.display = 'none';
+    hideOverlay();
+}
 
-function showLoginModal() { document.getElementById('loginModal').style.display = 'block'; showOverlay(); }
-function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; hideOverlay(); }
+function showLoginModal() { 
+    var modal = document.getElementById('loginModal');
+    if (modal) modal.style.display = 'block';
+    showOverlay();
+}
+function closeLoginModal() { 
+    var modal = document.getElementById('loginModal');
+    if (modal) modal.style.display = 'none';
+    hideOverlay();
+}
 
-function showRegisterModal() { document.getElementById('registerModal').style.display = 'block'; showOverlay(); }
-function closeRegisterModal() { document.getElementById('registerModal').style.display = 'none'; hideOverlay(); }
+function showRegisterModal() { 
+    var modal = document.getElementById('registerModal');
+    if (modal) modal.style.display = 'block';
+    showOverlay();
+}
+function closeRegisterModal() { 
+    var modal = document.getElementById('registerModal');
+    if (modal) modal.style.display = 'none';
+    hideOverlay();
+}
 
 function showProfileModal() { 
     var modal = document.getElementById('profileModal');
@@ -84,29 +128,36 @@ function showProfileModal() {
         loadProfile();
     }
 }
-function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; hideOverlay(); }
+function closeProfileModal() { 
+    var modal = document.getElementById('profileModal');
+    if (modal) modal.style.display = 'none';
+    hideOverlay();
+}
 
-function makePhoneCall() { window.location.href = 'tel:+78121234567'; }
+function makePhoneCall() { 
+    window.location.href = 'tel:+78121234567'; 
+}
 
 function calculatePrice() {
-    var pickup = document.getElementById('orderPickup').value;
-    var dropoff = document.getElementById('orderDropoff').value;
-    var tariff = document.getElementById('orderTariff').value;
+    var pickup = document.getElementById('orderPickup');
+    var dropoff = document.getElementById('orderDropoff');
+    var tariff = document.getElementById('orderTariff');
     var priceDiv = document.getElementById('pricePreview');
-    if (pickup && dropoff && priceDiv) {
+    
+    if (pickup && dropoff && tariff && priceDiv && pickup.value && dropoff.value) {
         var pricePerKm = 25;
-        if (tariff === 'Комфорт') pricePerKm = 35;
-        if (tariff === 'Бизнес') pricePerKm = 50;
+        if (tariff.value === 'Комфорт') pricePerKm = 35;
+        if (tariff.value === 'Бизнес') pricePerKm = 50;
         var price = 10 * pricePerKm;
         priceDiv.innerHTML = 'Примерная стоимость: ' + price + ' ₽';
     }
 }
 
 function sendComment() {
-    var comment = document.getElementById('driverComment').value;
-    if (comment) {
-        alert('Комментарий отправлен: ' + comment);
-        document.getElementById('driverComment').value = '';
+    var comment = document.getElementById('driverComment');
+    if (comment && comment.value) {
+        alert('Комментарий отправлен: ' + comment.value);
+        comment.value = '';
         closeCommentModal();
     } else {
         alert('Введите комментарий');
@@ -120,44 +171,44 @@ function logout() {
 
 // ========== ЗАКАЗ ==========
 async function submitOrder() {
-    var name = document.getElementById('orderName').value;
-    var phone = document.getElementById('orderPhone').value;
-    var pickup = document.getElementById('orderPickup').value;
-    var dropoff = document.getElementById('orderDropoff').value;
-    var tariff = document.getElementById('orderTariff').value;
+    var name = document.getElementById('orderName');
+    var phone = document.getElementById('orderPhone');
+    var pickup = document.getElementById('orderPickup');
+    var dropoff = document.getElementById('orderDropoff');
+    var tariff = document.getElementById('orderTariff');
     
-    if (!name || !phone || !pickup || !dropoff) {
+    if (!name.value || !phone.value || !pickup.value || !dropoff.value) {
         alert('Заполните все поля');
         return;
     }
     
     var pricePerKm = 25;
-    if (tariff === 'Комфорт') pricePerKm = 35;
-    if (tariff === 'Бизнес') pricePerKm = 50;
+    if (tariff.value === 'Комфорт') pricePerKm = 35;
+    if (tariff.value === 'Бизнес') pricePerKm = 50;
     var price = 10 * pricePerKm;
     
     var formData = new FormData();
-    formData.append('pickup', pickup);
-    formData.append('dropoff', dropoff);
-    formData.append('tariff', tariff);
+    formData.append('pickup', pickup.value);
+    formData.append('dropoff', dropoff.value);
+    formData.append('tariff', tariff.value);
     formData.append('price', price);
     
     if (userId) {
         formData.append('user_id', userId);
     } else {
-        formData.append('guest_name', name);
-        formData.append('guest_phone', phone);
+        formData.append('guest_name', name.value);
+        formData.append('guest_phone', phone.value);
         formData.append('guest_email', '');
     }
     
     await fetch('/save-order', { method: 'POST', body: formData });
-    alert('Заказ оформлен!\nОткуда: ' + pickup + '\nКуда: ' + dropoff + '\nСтоимость: ' + price + ' ₽');
+    alert('Заказ оформлен!\nОткуда: ' + pickup.value + '\nКуда: ' + dropoff.value + '\nСтоимость: ' + price + ' ₽');
     closeOrderModal();
     
-    document.getElementById('orderName').value = '';
-    document.getElementById('orderPhone').value = '';
-    document.getElementById('orderPickup').value = '';
-    document.getElementById('orderDropoff').value = '';
+    name.value = '';
+    phone.value = '';
+    pickup.value = '';
+    dropoff.value = '';
 }
 
 // ========== РЕГИСТРАЦИЯ ==========
@@ -246,18 +297,22 @@ if (pickupInput) pickupInput.addEventListener('input', calculatePrice);
 if (dropoffInput) dropoffInput.addEventListener('input', calculatePrice);
 if (tariffSelect) tariffSelect.addEventListener('change', calculatePrice);
 
-if (userId && document.getElementById('userStatus')) {
+// Обновляем шапку если пользователь авторизован
+if (userId) {
     var userStatus = document.getElementById('userStatus');
-    userStatus.innerHTML = '<button class="lang-btn" id="langBtn">English</button><a href="#" onclick="showProfileModal()">' + userName + '</a> <a href="#" onclick="logout()">Выйти</a>';
-    var newLangBtn = document.getElementById('langBtn');
-    if (newLangBtn) {
-        newLangBtn.onclick = function() {
-            currentLang = (currentLang === 'ru') ? 'en' : 'ru';
-            alert(currentLang === 'ru' ? 'Язык переключен на русский' : 'Language switched to English');
-        };
+    if (userStatus) {
+        userStatus.innerHTML = '<button class="lang-btn" id="langBtn">English</button><a href="#" onclick="showProfileModal()">' + userName + '</a> <a href="#" onclick="logout()">Выйти</a>';
+        var newLangBtn = document.getElementById('langBtn');
+        if (newLangBtn) {
+            newLangBtn.onclick = function() {
+                currentLang = (currentLang === 'ru') ? 'en' : 'ru';
+                alert(currentLang === 'ru' ? 'Язык переключен на русский' : 'Language switched to English');
+            };
+        }
     }
 }
 
+// Делаем функции глобальными для onclick в HTML
 window.closeOrderModal = closeOrderModal;
 window.closeCommentModal = closeCommentModal;
 window.closeLoginModal = closeLoginModal;
@@ -273,9 +328,11 @@ if (window.location.pathname === '/admin') {
     document.body.innerHTML = '<div class="admin-container" style="padding:20px; font-family: SouthGhetto; max-width:1200px; margin:0 auto;"><h1>Админ-панель</h1><div style="display: flex; gap: 20px; flex-wrap: wrap;"><div style="flex: 1;"><h3>Заказы</h3><div id="adminOrders"></div></div><div style="flex: 1;"><h3>Водители</h3><div id="adminDrivers"></div></div></div><a href="/" style="display: inline-block; margin-top: 20px; color: #87CEFA;">На главную</a></div>';
     
     fetch('/api/all-orders').then(r => r.json()).then(orders => {
-        document.getElementById('adminOrders').innerHTML = orders.map(o => `<div class="order-card">Заказ ${o.id}: ${o.pickup_address} → ${o.dropoff_address} (${o.status})</div>`).join('');
+        var container = document.getElementById('adminOrders');
+        if (container) container.innerHTML = orders.map(o => `<div class="order-card">Заказ ${o.id}: ${o.pickup_address} → ${o.dropoff_address} (${o.status})</div>`).join('');
     });
     fetch('/api/all-drivers').then(r => r.json()).then(drivers => {
-        document.getElementById('adminDrivers').innerHTML = drivers.map(d => `<div class="order-card">${d.fullname} (${d.phone})</div>`).join('');
+        var container = document.getElementById('adminDrivers');
+        if (container) container.innerHTML = drivers.map(d => `<div class="order-card">${d.fullname} (${d.phone})</div>`).join('');
     });
 }
