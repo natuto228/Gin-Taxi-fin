@@ -234,20 +234,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 if (window.location.pathname === '/login') {
-    const form = document.getElementById('driverLoginForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const smsCode = document.getElementById('smsCode').value;
-            if (smsCode !== '123456') {
-                alert('Invalid SMS code');
-                return;
-            }
-            localStorage.setItem('driver', 'true');
-            localStorage.setItem('driverId', '2');
-            window.location.href = '/driver-dashboard';
-        });
-    }
+    document.getElementById('driverLoginForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        localStorage.setItem('driver', 'true');
+        localStorage.setItem('driverId', '2');
+        window.location.href = '/driver-dashboard';
+    });
 }
 
 if (window.location.pathname === '/driver-dashboard') {
@@ -326,53 +318,47 @@ async function updateStatus(orderId, status) {
 }
 
 if (window.location.pathname === '/login-user') {
-    const form = document.getElementById('loginUserForm');
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            formData.append('email', document.getElementById('email').value);
-            formData.append('password', document.getElementById('password').value);
-            
-            const response = await fetch('/login-user', { method: 'POST', body: formData });
-            const result = await response.json();
-            
-            if (result.success) {
-                localStorage.setItem('userId', result.user_id);
-                localStorage.setItem('userName', result.fullname);
-                alert(`Welcome, ${result.fullname}!`);
-                window.location.href = '/user-profile';
-            } else {
-                alert(result.error);
-            }
-        });
-    }
+    document.getElementById('loginUserForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        formData.append('email', document.getElementById('email').value);
+        formData.append('password', document.getElementById('password').value);
+        
+        const response = await fetch('/login-user', { method: 'POST', body: formData });
+        const result = await response.json();
+        
+        if (result.success) {
+            localStorage.setItem('userId', result.user_id);
+            localStorage.setItem('userName', result.fullname);
+            alert(`Welcome, ${result.fullname}!`);
+            window.location.href = '/user-profile';
+        } else {
+            alert(result.error);
+        }
+    });
 }
 
 if (window.location.pathname === '/register') {
-    const form = document.getElementById('registerForm');
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            formData.append('fullname', document.getElementById('fullname').value);
-            formData.append('phone', document.getElementById('phone').value);
-            formData.append('email', document.getElementById('email').value);
-            formData.append('password', document.getElementById('password').value);
-            
-            const response = await fetch('/register', { method: 'POST', body: formData });
-            const result = await response.json();
-            
-            if (result.success) {
-                alert('Registration successful. Please login.');
-                window.location.href = '/login-user';
-            } else {
-                alert(result.error || 'Registration error');
-            }
-        });
-    }
+    document.getElementById('registerForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        formData.append('fullname', document.getElementById('fullname').value);
+        formData.append('phone', document.getElementById('phone').value);
+        formData.append('email', document.getElementById('email').value);
+        formData.append('password', document.getElementById('password').value);
+        
+        const response = await fetch('/register', { method: 'POST', body: formData });
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Registration successful. Please login.');
+            window.location.href = '/login-user';
+        } else {
+            alert(result.error || 'Registration error');
+        }
+    });
 }
 
 if (window.location.pathname === '/user-profile') {
@@ -416,87 +402,26 @@ if (window.location.pathname === '/user-profile') {
 }
 
 if (window.location.pathname === '/application') {
-    const form = document.getElementById('applicationForm');
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            formData.append('fullname', document.getElementById('appFullname').value);
-            formData.append('phone', document.getElementById('appPhone').value);
-            formData.append('email', document.getElementById('appEmail').value);
-            formData.append('role', document.getElementById('appRole').value);
-            
-            await fetch('/save-application', { method: 'POST', body: formData });
-            alert('Thank you! We will contact you.');
-            window.location.href = '/login';
-        });
-    }
-}
-
-if (window.location.pathname.includes('/order/')) {
-    const statusSpan = document.getElementById('status');
-    if (statusSpan && statusSpan.innerText === 'Завершена') {
-        const ratingBlock = document.getElementById('ratingBlock');
-        if (ratingBlock) ratingBlock.style.display = 'block';
-    }
-    
-    const stars = document.querySelectorAll('.stars span');
-    stars.forEach(star => {
-        star.addEventListener('click', function() {
-            const rating = this.getAttribute('data-rating');
-            alert('Оценка: ' + rating + ' звезд');
-        });
-    });
-    
-    const submitReviewBtn = document.getElementById('submitReviewBtn');
-    if (submitReviewBtn) {
-        submitReviewBtn.addEventListener('click', function() {
-            const review = document.getElementById('review').value;
-            alert(review ? 'Спасибо за отзыв: ' + review : 'Спасибо за оценку!');
-        });
-    }
-    
-    const simulatePaymentBtn = document.getElementById('simulatePaymentBtn');
-    if (simulatePaymentBtn) {
-        simulatePaymentBtn.addEventListener('click', function() {
-            alert('Оплата прошла успешно (тестовый режим)');
-        });
-    }
-}
-
-if (window.location.pathname === '/admin') {
-    let drivers = [];
-    
-    fetch('/api/all-drivers').then(r => r.json()).then(data => {
-        drivers = data;
-        document.getElementById('driversList').innerHTML = drivers.map(d => 
-            `<div class="card mb-2 p-2">${d.fullname} (${d.phone})</div>`
-        ).join('');
+    document.getElementById('applicationForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
         
-        fetch('/api/all-orders').then(r => r.json()).then(data => {
-            document.getElementById('ordersList').innerHTML = data.map(o => `
-                <div class="card mb-2 p-2">
-                    Заказ ${o.id}: ${o.pickup_address} → ${o.dropoff_address} (${o.status})
-                    <select id="driver_${o.id}" class="form-select mt-2">
-                        <option value="">Выберите водителя</option>
-                        ${drivers.map(d => `<option value="${d.id}">${d.fullname}</option>`).join('')}
-                    </select>
-                    <button class="btn btn-sm btn-primary mt-2" onclick="assignOrder(${o.id})">Назначить</button>
-                </div>
-            `).join('');
-        });
-    });
-    
-    window.assignOrder = function(orderId) {
-        const driverId = document.getElementById(`driver_${orderId}`).value;
-        if (!driverId) return alert('Выберите водителя');
         const formData = new FormData();
-        formData.append('order_id', orderId);
-        formData.append('driver_id', driverId);
-        fetch('/api/assign-order', { method: 'POST', body: formData }).then(() => {
-            alert('Назначено');
-            location.reload();
+        formData.append('fullname', document.getElementById('appFullname').value);
+        formData.append('phone', document.getElementById('appPhone').value);
+        formData.append('email', document.getElementById('appEmail').value);
+        formData.append('role', document.getElementById('appRole').value);
+        
+        await fetch('/save-application', { method: 'POST', body: formData });
+        alert('Thank you! We will contact you.');
+        window.location.href = '/login';
+    });
+}
+
+if (window.location.pathname === '/order') {
+    const stars = document.querySelectorAll('.stars');
+    if (stars.length) {
+        stars.forEach(star => {
+            star.addEventListener('click', () => alert('Rating saved'));
         });
-    };
+    }
 }
