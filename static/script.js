@@ -1,20 +1,16 @@
-console.log('Script loaded');
-
 let map;
 let userMarker = null;
-let savedComment = '';
+let carMarker = null;
+let simulationInterval = null;
 
 function initMap() {
     if (typeof L === 'undefined') {
-        console.error('Leaflet не загружен');
+        console.error('Leaflet not loaded');
         return;
     }
     
     const mapElement = document.getElementById('map');
-    if (!mapElement) {
-        console.error('Элемент map не найден');
-        return;
-    }
+    if (!mapElement) return;
     
     map = L.map('map').setView([55.751244, 37.618423], 12);
     
@@ -24,20 +20,14 @@ function initMap() {
         maxZoom: 19
     }).addTo(map);
     
-    // Клик по карте - заполняет адрес подачи
     map.on('click', async function(e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-        
-        const address = await getAddressFromCoords(lat, lng);
+        const address = await getAddressFromCoords(e.latlng.lat, e.latlng.lng);
         const pickupInput = document.getElementById('orderPickup');
         if (pickupInput) pickupInput.value = address;
         
         if (userMarker) map.removeLayer(userMarker);
-        userMarker = L.marker([lat, lng]).addTo(map).bindPopup('Точка подачи').openPopup();
+        userMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
     });
-    
-    console.log('Карта инициализирована');
 }
 
 async function getAddressFromCoords(lat, lng) {
@@ -50,12 +40,9 @@ async function getAddressFromCoords(lat, lng) {
     }
 }
 
-window.searchAddress = function() {
+function searchAddress() {
     const query = document.getElementById('addressSearch').value;
-    if (!query) {
-        alert('Введите адрес');
-        return;
-    }
+    if (!query) return;
     
     fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
         .then(response => response.json())
@@ -66,72 +53,78 @@ window.searchAddress = function() {
                 map.setView([lat, lon], 15);
                 
                 if (userMarker) map.removeLayer(userMarker);
-                userMarker = L.marker([lat, lon]).addTo(map).bindPopup(query).openPopup();
-                
-                const pickupInput = document.getElementById('orderPickup');
-                if (pickupInput) pickupInput.value = query;
+                userMarker = L.marker([lat, lon]).addTo(map);
+                document.getElementById('orderPickup').value = query;
             } else {
-                alert('Адрес не найден');
+                alert('Address not found');
             }
-        })
-        .catch(error => {
-            console.error('Ошибка поиска:', error);
-            alert('Ошибка при поиске адреса');
         });
-};
+}
 
-window.setCurrentLocation = function() {
+function setCurrentLocation() {
     if (!navigator.geolocation) {
-        alert('Геолокация не поддерживается вашим браузером');
+        alert('Geolocation not supported');
         return;
     }
     
-    navigator.geolocation.getCurrentPosition(
-        async function(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            map.setView([lat, lng], 15);
-            
-            if (userMarker) map.removeLayer(userMarker);
-            userMarker = L.marker([lat, lng]).addTo(map).bindPopup('Вы здесь').openPopup();
-            
-            const address = await getAddressFromCoords(lat, lng);
-            const pickupInput = document.getElementById('orderPickup');
-            if (pickupInput) pickupInput.value = address;
-        },
-        function(error) {
-            console.error('Ошибка геолокации:', error);
-            alert('Не удалось определить местоположение. Проверьте разрешения в браузере.');
-        }
-    );
-};
+    navigator.geolocation.getCurrentPosition(async function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        map.setView([lat, lng], 15);
+        
+        if (userMarker) map.removeLayer(userMarker);
+        userMarker = L.marker([lat, lng]).addTo(map);
+        
+        const address = await getAddressFromCoords(lat, lng);
+        document.getElementById('orderPickup').value = address;
+    }, function() {
+        alert('Could not get location');
+    });
+}
 
-window.makePhoneCall = function() {
+function makePhoneCall() {
     window.location.href = 'tel:+78121234567';
-};
+}
 
-window.openOrderForm = function() {
+function openOrderForm() {
     document.getElementById('orderModal').style.display = 'flex';
-};
+    calculatePrice();
+}
 
-window.closeOrderModal = function() {
+function closeOrderModal() {
     document.getElementById('orderModal').style.display = 'none';
-};
+}
 
-window.openCommentModal = function() {
+function openCommentModal() {
     document.getElementById('commentModal').style.display = 'flex';
-};
+}
 
-window.closeCommentModal = function() {
-    const comment = document.getElementById('driverComment').value;
-    if (comment) {
-        savedComment = comment;
-        alert('Комментарий сохранен. Он будет отправлен с заказом.');
-    }
+function closeCommentModal() {
     document.getElementById('commentModal').style.display = 'none';
-};
+}
 
-window.submitOrder = async function() {
+function calculatePrice() {
+    const pickup = document.getElementById('orderPickup').value;
+    const dropoff = document.getElementById('orderDropoff').value;
+    const tariff = document.getElementById('orderTariff').value;
+    const priceDiv = document.getElementById('pricePreview');
+    
+    if (!pickup || !dropoff) {
+        if (priceDiv) priceDiv.innerHTML = '';
+        return;
+    }
+    
+    let pricePerKm = 25;
+    if (tariff.includes('Комфорт')) pricePerKm = 35;
+    if (tariff.includes('Бизнес')) pricePerKm = 50;
+    
+    const distance = 10;
+    const price = distance * pricePerKm;
+    
+    if (priceDiv) priceDiv.innerHTML = `Estimated price: ${price} RUB`;
+}
+
+async function submitOrder() {
     const name = document.getElementById('orderName').value;
     const phone = document.getElementById('orderPhone').value;
     const pickup = document.getElementById('orderPickup').value;
@@ -139,7 +132,7 @@ window.submitOrder = async function() {
     const tariff = document.getElementById('orderTariff').value;
     
     if (!name || !phone || !pickup || !dropoff) {
-        alert('Заполните все поля');
+        alert('Fill all fields');
         return;
     }
     
@@ -155,10 +148,6 @@ window.submitOrder = async function() {
     formData.append('tariff', tariff);
     formData.append('price', price);
     
-    if (savedComment) {
-        alert(`Комментарий к заказу: ${savedComment}`);
-    }
-    
     if (userId) {
         formData.append('user_id', userId);
     } else {
@@ -167,25 +156,80 @@ window.submitOrder = async function() {
         formData.append('guest_email', '');
     }
     
-    try {
-        await fetch('/save-order', { method: 'POST', body: formData });
-        alert(`Заказ оформлен!\n\nОткуда: ${pickup}\nКуда: ${dropoff}\nСтоимость: ${price} ₽`);
-        closeOrderModal();
-        
-        document.getElementById('orderName').value = '';
-        document.getElementById('orderPhone').value = '';
-        document.getElementById('orderPickup').value = '';
-        document.getElementById('orderDropoff').value = '';
-        savedComment = '';
+    await fetch('/save-order', { method: 'POST', body: formData });
+    alert(`Order confirmed!\nFrom: ${pickup}\nTo: ${dropoff}\nPrice: ${price} RUB`);
+    closeOrderModal();
+    
+    document.getElementById('orderName').value = '';
+    document.getElementById('orderPhone').value = '';
+    document.getElementById('orderPickup').value = '';
+    document.getElementById('orderDropoff').value = '';
+}
+
+function sendComment() {
+    const comment = document.getElementById('driverComment').value;
+    if (comment) {
+        alert('Comment sent');
         document.getElementById('driverComment').value = '';
-    } catch (error) {
-        alert('Ошибка при оформлении заказа');
+        closeCommentModal();
+    } else {
+        alert('Enter comment');
     }
-};
+}
+
+function toggleLanguage() {
+    const isRu = document.documentElement.lang === 'ru';
+    document.documentElement.lang = isRu ? 'en' : 'ru';
+    alert(isRu ? 'Language switched to English' : 'Язык переключен на русский');
+}
+
+function initCarSimulation() {
+    if (simulationInterval) clearInterval(simulationInterval);
+    
+    let step = 0;
+    const path = [
+        [55.751244, 37.618423],
+        [55.761244, 37.628423],
+        [55.771244, 37.638423]
+    ];
+    
+    if (!carMarker) {
+        carMarker = L.marker(path[0]).addTo(map);
+    }
+    
+    simulationInterval = setInterval(() => {
+        step = (step + 1) % path.length;
+        carMarker.setLatLng(path[step]);
+        map.setView(path[step], 15);
+        
+        const carDiv = document.getElementById('carLocation');
+        if (carDiv) carDiv.style.display = 'block';
+    }, 5000);
+}
+
+function startSimulation() {
+    initCarSimulation();
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname === '/') {
         initMap();
+        startSimulation();
+        
+        document.getElementById('searchBtn')?.addEventListener('click', searchAddress);
+        document.getElementById('myLocationBtn')?.addEventListener('click', setCurrentLocation);
+        document.getElementById('orderBtn')?.addEventListener('click', openOrderForm);
+        document.getElementById('phoneOrderBtn')?.addEventListener('click', makePhoneCall);
+        document.getElementById('commentBtn')?.addEventListener('click', openCommentModal);
+        document.getElementById('driverLoginBtn')?.addEventListener('click', () => window.location.href = '/login');
+        
+        const pickupInput = document.getElementById('orderPickup');
+        const dropoffInput = document.getElementById('orderDropoff');
+        const tariffSelect = document.getElementById('orderTariff');
+        
+        if (pickupInput) pickupInput.addEventListener('input', calculatePrice);
+        if (dropoffInput) dropoffInput.addEventListener('input', calculatePrice);
+        if (tariffSelect) tariffSelect.addEventListener('change', calculatePrice);
     }
 });
 
@@ -194,52 +238,91 @@ if (window.location.pathname === '/login') {
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+            const smsCode = document.getElementById('smsCode').value;
+            if (smsCode !== '123456') {
+                alert('Invalid SMS code');
+                return;
+            }
             localStorage.setItem('driver', 'true');
+            localStorage.setItem('driverId', '2');
             window.location.href = '/driver-dashboard';
         });
     }
 }
 
 if (window.location.pathname === '/driver-dashboard') {
-    if (!localStorage.getItem('driver')) {
-        window.location.href = '/login';
-    }
-    
+    if (!localStorage.getItem('driver')) window.location.href = '/login';
     loadDriverOrders();
+    loadDriverHistory();
+}
+
+async function loadDriverOrders() {
+    const response = await fetch('/user-orders/all');
+    const orders = await response.json();
+    const container = document.getElementById('ordersList');
     
-    async function loadDriverOrders() {
-        try {
-            const response = await fetch('/user-orders/all');
-            const orders = await response.json();
-            const container = document.getElementById('ordersList');
-            
-            if (orders.length === 0) {
-                container.innerHTML = '<div class="alert alert-info">Нет активных заказов</div>';
-                return;
-            }
-            
-            let html = '';
-            orders.forEach(order => {
-                html += `
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <div>${order.pickup} → ${order.dropoff}</div>
-                            <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
-                            <button class="btn btn-sm btn-success mt-2" onclick="acceptOrder(${order.id})">Принять</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        } catch (error) {
-            console.error('Ошибка загрузки заказов:', error);
-        }
+    if (!orders.length) {
+        container.innerHTML = '<div class="alert alert-info">No new orders</div>';
+        return;
     }
     
-    window.acceptOrder = function(id) {
-        alert(`Заказ ${id} принят. Еду к пассажиру.`);
-        loadDriverOrders();
-    };
+    container.innerHTML = orders.map(order => `
+        <div class="card mb-2">
+            <div class="card-body">
+                <div>${order.pickup} → ${order.dropoff}</div>
+                <div>Tariff: ${order.tariff} | Price: ${order.price} RUB</div>
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-warning" onclick="updateStatus(${order.id}, 'Driving to passenger')">Driving to passenger</button>
+                    <button class="btn btn-sm btn-info" onclick="updateStatus(${order.id}, 'Passenger in car')">Passenger in car</button>
+                    <button class="btn btn-sm btn-success" onclick="updateStatus(${order.id}, 'Completed')">Complete</button>
+                    <button class="btn btn-sm btn-primary" onclick="acceptOrder(${order.id})">Accept</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function loadDriverHistory() {
+    const driverId = localStorage.getItem('driverId');
+    const response = await fetch(`/driver-orders/${driverId}`);
+    const orders = await response.json();
+    const container = document.getElementById('historyList');
+    
+    if (!orders.length) {
+        container.innerHTML = '<div class="alert alert-info">No completed orders</div>';
+        return;
+    }
+    
+    container.innerHTML = orders.map(order => `
+        <div class="card mb-2">
+            <div class="card-body">
+                <div>${order.pickup_address} → ${order.dropoff_address}</div>
+                <div>Tariff: ${order.tariff} | Price: ${order.price} RUB</div>
+                <div>Status: ${order.status}</div>
+                <div>Date: ${order.created_at}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function acceptOrder(orderId) {
+    const driverId = localStorage.getItem('driverId');
+    const formData = new FormData();
+    formData.append('driver_id', driverId);
+    
+    await fetch(`/assign-order/${orderId}`, { method: 'POST', body: formData });
+    alert(`Order ${orderId} accepted`);
+    loadDriverOrders();
+    loadDriverHistory();
+}
+
+async function updateStatus(orderId, status) {
+    const formData = new FormData();
+    formData.append('status', status);
+    await fetch(`/update-order-status/${orderId}`, { method: 'POST', body: formData });
+    alert(`Status changed to "${status}"`);
+    loadDriverOrders();
+    loadDriverHistory();
 }
 
 if (window.location.pathname === '/login-user') {
@@ -258,7 +341,7 @@ if (window.location.pathname === '/login-user') {
             if (result.success) {
                 localStorage.setItem('userId', result.user_id);
                 localStorage.setItem('userName', result.fullname);
-                alert(`Добро пожаловать, ${result.fullname}!`);
+                alert(`Welcome, ${result.fullname}!`);
                 window.location.href = '/user-profile';
             } else {
                 alert(result.error);
@@ -283,10 +366,10 @@ if (window.location.pathname === '/register') {
             const result = await response.json();
             
             if (result.success) {
-                alert('Регистрация успешна. Теперь войдите.');
+                alert('Registration successful. Please login.');
                 window.location.href = '/login-user';
             } else {
-                alert(result.error || 'Ошибка регистрации');
+                alert(result.error || 'Registration error');
             }
         });
     }
@@ -296,47 +379,124 @@ if (window.location.pathname === '/user-profile') {
     const userId = localStorage.getItem('userId');
     const userName = localStorage.getItem('userName');
     
-    if (!userId) {
-        window.location.href = '/login-user';
-    }
+    if (!userId) window.location.href = '/login-user';
     
     document.getElementById('userFullname').innerText = userName;
     
     loadUserOrders();
     
     async function loadUserOrders() {
-        try {
-            const response = await fetch(`/user-orders/${userId}`);
-            const orders = await response.json();
-            const container = document.getElementById('ordersHistory');
-            
-            if (orders.length === 0) {
-                container.innerHTML = '<div class="alert alert-info">У вас пока нет заказов</div>';
-                return;
-            }
-            
-            let html = '';
-            orders.forEach(order => {
-                html += `
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <div>${order.date}</div>
-                            <div>${order.pickup} → ${order.dropoff}</div>
-                            <div>${order.tariff} | ${order.price} ₽</div>
-                            <div>Статус: ${order.status}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-            document.getElementById('totalOrders').innerText = orders.length;
-        } catch (error) {
-            console.error('Ошибка загрузки истории:', error);
+        const response = await fetch(`/user-orders/${userId}`);
+        const orders = await response.json();
+        const container = document.getElementById('ordersHistory');
+        
+        if (!orders.length) {
+            container.innerHTML = '<div class="alert alert-info">No orders yet</div>';
+            return;
         }
+        
+        container.innerHTML = orders.map(order => `
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div>${order.date}</div>
+                    <div>${order.pickup} → ${order.dropoff}</div>
+                    <div>${order.tariff} | ${order.price} RUB</div>
+                    <div>Status: ${order.status}</div>
+                    <a href="/order/${order.id}" class="btn btn-sm btn-info mt-2">Details</a>
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('totalOrders').innerText = orders.length;
     }
     
-    document.getElementById('logoutUserBtn').onclick = function() {
+    document.getElementById('logoutUserBtn').onclick = () => {
         localStorage.clear();
         window.location.href = '/';
+    };
+}
+
+if (window.location.pathname === '/application') {
+    const form = document.getElementById('applicationForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('fullname', document.getElementById('appFullname').value);
+            formData.append('phone', document.getElementById('appPhone').value);
+            formData.append('email', document.getElementById('appEmail').value);
+            formData.append('role', document.getElementById('appRole').value);
+            
+            await fetch('/save-application', { method: 'POST', body: formData });
+            alert('Thank you! We will contact you.');
+            window.location.href = '/login';
+        });
+    }
+}
+
+if (window.location.pathname.includes('/order/')) {
+    const statusSpan = document.getElementById('status');
+    if (statusSpan && statusSpan.innerText === 'Завершена') {
+        const ratingBlock = document.getElementById('ratingBlock');
+        if (ratingBlock) ratingBlock.style.display = 'block';
+    }
+    
+    const stars = document.querySelectorAll('.stars span');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = this.getAttribute('data-rating');
+            alert('Оценка: ' + rating + ' звезд');
+        });
+    });
+    
+    const submitReviewBtn = document.getElementById('submitReviewBtn');
+    if (submitReviewBtn) {
+        submitReviewBtn.addEventListener('click', function() {
+            const review = document.getElementById('review').value;
+            alert(review ? 'Спасибо за отзыв: ' + review : 'Спасибо за оценку!');
+        });
+    }
+    
+    const simulatePaymentBtn = document.getElementById('simulatePaymentBtn');
+    if (simulatePaymentBtn) {
+        simulatePaymentBtn.addEventListener('click', function() {
+            alert('Оплата прошла успешно (тестовый режим)');
+        });
+    }
+}
+
+if (window.location.pathname === '/admin') {
+    let drivers = [];
+    
+    fetch('/api/all-drivers').then(r => r.json()).then(data => {
+        drivers = data;
+        document.getElementById('driversList').innerHTML = drivers.map(d => 
+            `<div class="card mb-2 p-2">${d.fullname} (${d.phone})</div>`
+        ).join('');
+        
+        fetch('/api/all-orders').then(r => r.json()).then(data => {
+            document.getElementById('ordersList').innerHTML = data.map(o => `
+                <div class="card mb-2 p-2">
+                    Заказ ${o.id}: ${o.pickup_address} → ${o.dropoff_address} (${o.status})
+                    <select id="driver_${o.id}" class="form-select mt-2">
+                        <option value="">Выберите водителя</option>
+                        ${drivers.map(d => `<option value="${d.id}">${d.fullname}</option>`).join('')}
+                    </select>
+                    <button class="btn btn-sm btn-primary mt-2" onclick="assignOrder(${o.id})">Назначить</button>
+                </div>
+            `).join('');
+        });
+    });
+    
+    window.assignOrder = function(orderId) {
+        const driverId = document.getElementById(`driver_${orderId}`).value;
+        if (!driverId) return alert('Выберите водителя');
+        const formData = new FormData();
+        formData.append('order_id', orderId);
+        formData.append('driver_id', driverId);
+        fetch('/api/assign-order', { method: 'POST', body: formData }).then(() => {
+            alert('Назначено');
+            location.reload();
+        });
     };
 }
