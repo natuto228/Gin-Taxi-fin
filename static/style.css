@@ -1,8 +1,3 @@
-@font-face {
-    font-family: 'SouthGhetto';
-    src: url('https://fonts.cdnfonts.com/css/southghetto') format('woff2');
-}
-
 * {
     margin: 0;
     padding: 0;
@@ -10,10 +5,11 @@
 }
 
 body {
-    font-family: 'SouthGhetto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'SouthGhetto', 'Segoe UI', sans-serif;
     background: white;
     min-height: 100vh;
     color: black;
+    text-transform: uppercase;
 }
 
 .page-container {
@@ -22,188 +18,158 @@ body {
     min-height: 100vh;
 }
 
-/* ===== ШАПКА ===== */
 .header {
     background: white;
-    padding: 15px 30px;
+    padding: 15px 25px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #eee;
 }
 
-.user-status {
-    font-size: 14px;
-    color: black;
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #87CEFA;
 }
 
-.user-status a, .lang-btn {
+.user-status a {
     color: black;
     text-decoration: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: 'SouthGhetto', sans-serif;
-    margin-left: 15px;
+    margin-left: 20px;
+    font-size: 13px;
 }
 
-/* ===== ОСНОВНОЙ КОНТЕНТ ===== */
 .main-content {
     display: flex;
     flex: 1;
-    padding: 20px;
-    gap: 20px;
+    padding: 25px;
+    gap: 25px;
 }
 
 .sidebar {
-    width: 25%;
-    background: transparent;
+    width: 260px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
 }
 
-/* ===== ЛОГО ===== */
-.logo-image-card {
+.logo-card {
     text-align: center;
-    cursor: pointer;
-    background: transparent;
     padding-bottom: 15px;
     border-bottom: 1px solid #eee;
     margin-bottom: 5px;
 }
 
-.logo-image-card img {
-    max-width: 100%;
+.logo-card img {
+    width: 100%;
+    max-width: 160px;
     height: auto;
     display: block;
+    margin: 0 auto;
     border: none;
-    outline: none;
-    box-shadow: none;
 }
 
-.logo-image-card p {
+.logo-card p {
     margin-top: 10px;
     font-size: 14px;
     color: black;
 }
 
-/* ===== КНОПКИ ===== */
-.action-card {
+.btn-action {
     background: #87CEFA;
     border-radius: 8px;
-    padding: 12px 15px;
+    padding: 12px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s;
 }
 
-.action-card:hover {
+.btn-action:hover {
     background: #6bb5e0;
     transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.action-card h3 {
-    font-size: 14px;
-    font-weight: normal;
+.btn-action h3 {
+    font-size: 13px;
     color: white;
-    margin-bottom: 0;
+    font-weight: normal;
 }
 
-.driver-card {
+.btn-driver {
     background: #87CEFA;
     border-radius: 0 30px 30px 0;
-    padding: 12px 20px;
+    padding: 12px 18px;
     margin-left: -20px;
     text-align: left;
     cursor: pointer;
-    transition: all 0.3s ease;
     width: calc(100% + 20px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     margin-top: auto;
-    border-top: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.2s;
 }
 
-.driver-card:hover {
+.btn-driver:hover {
     background: #6bb5e0;
     transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.driver-card h3 {
-    font-size: 14px;
-    font-weight: normal;
+.btn-driver h3 {
+    font-size: 13px;
     color: white;
     margin-bottom: 4px;
 }
 
-.driver-card p {
-    font-size: 11px;
+.btn-driver p {
+    font-size: 10px;
     color: rgba(255,255,255,0.8);
 }
 
-/* ===== КАРТА ===== */
-.map-container {
-    width: 75%;
-    background: #f5f5f5;
-    border-radius: 12px;
-    overflow: hidden;
+.map-area {
+    flex: 1;
     position: relative;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 #map {
-    height: 100%;
+    height: 580px;
     width: 100%;
-    min-height: 600px;
+    border-radius: 12px;
 }
 
-.search-overlay {
+.search-block {
     position: absolute;
     top: 15px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
-    width: 80%;
-    max-width: 400px;
     display: flex;
     gap: 8px;
-    background: rgba(255,255,255,0.95);
-    padding: 6px;
+    background: white;
+    padding: 5px;
     border-radius: 40px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
 }
 
-.search-overlay input {
-    flex: 1;
-    padding: 10px 15px;
+.search-block input {
+    padding: 10px 16px;
+    border-radius: 40px;
     border: none;
-    border-radius: 30px;
-    font-size: 13px;
-    background: white;
+    width: 260px;
     font-family: 'SouthGhetto', sans-serif;
-    color: black;
+    font-size: 12px;
     outline: none;
 }
 
-.search-overlay button {
+.search-block button {
     background: #87CEFA;
     border: none;
-    border-radius: 30px;
-    padding: 6px 18px;
+    border-radius: 40px;
+    padding: 8px 22px;
     color: white;
     cursor: pointer;
     font-family: 'SouthGhetto', sans-serif;
-    transition: all 0.3s ease;
 }
 
-.search-overlay button:hover {
-    background: #6bb5e0;
-}
-
-.map-location-btn {
+.geo-btn {
     position: absolute;
     bottom: 20px;
     right: 20px;
@@ -213,44 +179,20 @@ body {
     border-radius: 50%;
     width: 44px;
     height: 44px;
+    font-size: 22px;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: #87CEFA;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-.map-location-btn:hover {
-    background: #f0f0f0;
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-/* ===== ПОДВАЛ ===== */
 .footer {
     background: white;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid #eee;
     text-align: center;
-    padding: 15px 20px;
+    padding: 15px;
     font-size: 11px;
-    margin-top: auto;
-}
-
-.footer-content {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
-}
-
-.footer-content span {
     color: #999;
 }
 
-/* ===== МОДАЛЬНЫЕ ОКНА ===== */
 .modal {
     display: none;
     position: fixed;
@@ -263,25 +205,24 @@ body {
     width: 380px;
     max-width: 90%;
     z-index: 1000;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    border: 1px solid #ddd;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    border: 1px solid #eee;
 }
 
 .modal h3 {
     margin-bottom: 15px;
-    color: black;
     font-size: 16px;
     text-align: center;
+    color: #87CEFA;
 }
 
 .modal input, .modal select, .modal textarea {
     width: 100%;
     padding: 10px;
-    margin-bottom: 12px;
+    margin: 8px 0;
     border: 1px solid #ddd;
     border-radius: 6px;
     font-family: 'SouthGhetto', sans-serif;
-    font-size: 12px;
 }
 
 .modal button {
@@ -290,31 +231,20 @@ body {
     padding: 10px;
     border-radius: 6px;
     color: white;
-    font-weight: bold;
     cursor: pointer;
     width: 100%;
     font-family: 'SouthGhetto', sans-serif;
-    font-size: 12px;
-    margin-top: 5px;
-}
-
-.modal button:hover {
-    background: #6bb5e0;
-}
-
-.modal .btn-secondary {
-    background: #e0e0e0;
-    color: black;
     margin-top: 8px;
 }
 
-.modal .btn-secondary:hover {
-    background: #ccc;
+.modal .btn-gray {
+    background: #e0e0e0;
+    color: black;
 }
 
 .modal-link {
     text-align: center;
-    margin-top: 10px;
+    margin-top: 12px;
     font-size: 11px;
 }
 
@@ -334,17 +264,16 @@ body {
     z-index: 999;
 }
 
-/* ===== КАРТОЧКИ В ПРОФИЛЕ ===== */
 .order-card {
     background: #f8f9fa;
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 10px;
-    margin-bottom: 8px;
+    margin: 10px 0;
     border-left: 3px solid #87CEFA;
     font-size: 11px;
 }
 
-.logout-btn {
+.logout-red {
     background: #dc3545;
     margin-top: 15px;
 }
@@ -356,21 +285,18 @@ body {
     color: #87CEFA;
 }
 
-/* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 768px) {
     .main-content {
         flex-direction: column;
     }
-    .sidebar, .map-container {
+    .sidebar {
         width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
     }
-    .driver-card {
+    .btn-driver {
         margin-left: 0;
-        border-radius: 8px;
         width: 100%;
-    }
-    .footer-content {
-        gap: 15px;
-        flex-direction: column;
+        border-radius: 8px;
     }
 }
