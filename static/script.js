@@ -4,34 +4,39 @@ let carMarker = null;
 let simulationInterval = null;
 
 function initMap() {
-    ymaps.ready(function() {
-        map = new ymaps.Map('map', {
-            center: [55.751244, 37.618423],
-            zoom: 12,
-            controls: ['zoomControl', 'fullscreenControl']
-        });
+    if (typeof L === 'undefined') {
+        console.error('Leaflet not loaded');
+        return;
+    }
+    
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+    
+    map = L.map('map').setView([55.751244, 37.618423], 12);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: 'OpenStreetMap contributors',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
+    
+    map.on('click', async function(e) {
+        const address = await getAddressFromCoords(e.latlng.lat, e.latlng.lng);
+        const pickupInput = document.getElementById('orderPickup');
+        if (pickupInput) pickupInput.value = address;
         
-        map.events.add('click', async function(e) {
-            const coords = e.get('coords');
-            const address = await getAddressFromCoords(coords[0], coords[1]);
-            const pickupInput = document.getElementById('orderPickup');
-            if (pickupInput) pickupInput.value = address;
-            
-            if (userMarker) map.geoObjects.remove(userMarker);
-            userMarker = new ymaps.Placemark(coords);
-            map.geoObjects.add(userMarker);
-        });
+        if (userMarker) map.removeLayer(userMarker);
+        userMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
     });
 }
 
 async function getAddressFromCoords(lat, lng) {
     try {
-        const response = await fetch(`https://geocode-maps.yandex.ru/1.x/?apikey=087a8bd0-4f5b-4b21-8e12-646e0b27a2c4&geocode=${lng},${lat}&format=json`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`);
         const data = await response.json();
-        const address = data.response.GeoObjectCollection.featureMember[0]?.GeoObject.metaDataProperty.GeocoderMetaData.text;
-        return address || `${lat}, ${lng}`;
+        return data.display_name?.split(',')[0] || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
     } catch (error) {
-        return `${lat}, ${lng}`;
+        return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
     }
 }
 
@@ -39,44 +44,41 @@ function searchAddress() {
     const query = document.getElementById('addressSearch').value;
     if (!query) return;
     
-    ymaps.geocode(query, { results: 1 }).then(function(res) {
-        const firstGeoObject = res.geoObjects.get(0);
-        const coords = firstGeoObject.geometry.getCoordinates();
-        const address = firstGeoObject.getAddressLine();
-        
-        map.setCenter(coords, 15);
-        
-        if (userMarker) map.geoObjects.remove(userMarker);
-        userMarker = new ymaps.Placemark(coords);
-        map.geoObjects.add(userMarker);
-        
-        document.getElementById('orderPickup').value = address;
-    }).catch(function() {
-        alert('Адрес не найден');
-    });
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                map.setView([lat, lon], 15);
+                
+                if (userMarker) map.removeLayer(userMarker);
+                userMarker = L.marker([lat, lon]).addTo(map);
+                document.getElementById('orderPickup').value = query;
+            } else {
+                alert('Address not found');
+            }
+        });
 }
 
 function setCurrentLocation() {
-    if (!ymaps.geolocation) {
-        alert('Геолокация не поддерживается');
+    if (!navigator.geolocation) {
+        alert('Geolocation not supported');
         return;
     }
     
-    ymaps.geolocation.get({
-        mapStateAutoApply: true
-    }).then(function(result) {
-        const coords = result.geoObjects.position;
-        map.setCenter(coords, 15);
+    navigator.geolocation.getCurrentPosition(async function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        map.setView([lat, lng], 15);
         
-        if (userMarker) map.geoObjects.remove(userMarker);
-        userMarker = new ymaps.Placemark(coords);
-        map.geoObjects.add(userMarker);
+        if (userMarker) map.removeLayer(userMarker);
+        userMarker = L.marker([lat, lng]).addTo(map);
         
-        getAddressFromCoords(coords[0], coords[1]).then(address => {
-            document.getElementById('orderPickup').value = address;
-        });
-    }).catch(function() {
-        alert('Не удалось определить местоположение');
+        const address = await getAddressFromCoords(lat, lng);
+        document.getElementById('orderPickup').value = address;
+    }, function() {
+        alert('Could not get location');
     });
 }
 
@@ -119,7 +121,7 @@ function calculatePrice() {
     const distance = 10;
     const price = distance * pricePerKm;
     
-    if (priceDiv) priceDiv.innerHTML = `Примерная стоимость: ${price} ₽`;
+    if (priceDiv) priceDiv.innerHTML = `Estimated price: ${price} RUB`;
 }
 
 async function submitOrder() {
@@ -130,7 +132,7 @@ async function submitOrder() {
     const tariff = document.getElementById('orderTariff').value;
     
     if (!name || !phone || !pickup || !dropoff) {
-        alert('Заполните все поля');
+        alert('Fill all fields');
         return;
     }
     
@@ -155,7 +157,7 @@ async function submitOrder() {
     }
     
     await fetch('/save-order', { method: 'POST', body: formData });
-    alert(`Заказ оформлен!\nОткуда: ${pickup}\nКуда: ${dropoff}\nСтоимость: ${price} ₽`);
+    alert(`Order confirmed!\nFrom: ${pickup}\nTo: ${dropoff}\nPrice: ${price} RUB`);
     closeOrderModal();
     
     document.getElementById('orderName').value = '';
@@ -167,11 +169,11 @@ async function submitOrder() {
 function sendComment() {
     const comment = document.getElementById('driverComment').value;
     if (comment) {
-        alert('Комментарий отправлен');
+        alert('Comment sent');
         document.getElementById('driverComment').value = '';
         closeCommentModal();
     } else {
-        alert('Введите комментарий');
+        alert('Enter comment');
     }
 }
 
@@ -192,16 +194,13 @@ function initCarSimulation() {
     ];
     
     if (!carMarker) {
-        carMarker = new ymaps.Placemark(path[0], {
-            preset: 'islands#carIcon'
-        });
-        map.geoObjects.add(carMarker);
+        carMarker = L.marker(path[0]).addTo(map);
     }
     
     simulationInterval = setInterval(() => {
         step = (step + 1) % path.length;
-        carMarker.geometry.setCoordinates(path[step]);
-        map.setCenter(path[step], 15);
+        carMarker.setLatLng(path[step]);
+        map.setView(path[step], 15);
         
         const carDiv = document.getElementById('carLocation');
         if (carDiv) carDiv.style.display = 'block';
@@ -209,13 +208,13 @@ function initCarSimulation() {
 }
 
 function startSimulation() {
-    if (map) initCarSimulation();
+    initCarSimulation();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname === '/') {
         initMap();
-        setTimeout(startSimulation, 2000);
+        startSimulation();
         
         document.getElementById('searchBtn')?.addEventListener('click', searchAddress);
         document.getElementById('myLocationBtn')?.addEventListener('click', setCurrentLocation);
@@ -263,7 +262,7 @@ async function loadDriverOrders() {
     const container = document.getElementById('ordersList');
     
     if (!orders.length) {
-        container.innerHTML = '<div class="alert alert-info">Нет новых заказов</div>';
+        container.innerHTML = '<div class="alert alert-info">No new orders</div>';
         return;
     }
     
@@ -271,12 +270,12 @@ async function loadDriverOrders() {
         <div class="card mb-2">
             <div class="card-body">
                 <div>${order.pickup} → ${order.dropoff}</div>
-                <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
+                <div>Tariff: ${order.tariff} | Price: ${order.price} RUB</div>
                 <div class="mt-2">
-                    <button class="btn btn-sm btn-warning" onclick="updateStatus(${order.id}, 'Еду к пассажиру')">Еду к пассажиру</button>
-                    <button class="btn btn-sm btn-info" onclick="updateStatus(${order.id}, 'Пассажир в машине')">Пассажир в машине</button>
-                    <button class="btn btn-sm btn-success" onclick="updateStatus(${order.id}, 'Завершена')">Завершить</button>
-                    <button class="btn btn-sm btn-primary" onclick="acceptOrder(${order.id})">Принять</button>
+                    <button class="btn btn-sm btn-warning" onclick="updateStatus(${order.id}, 'Driving to passenger')">Driving to passenger</button>
+                    <button class="btn btn-sm btn-info" onclick="updateStatus(${order.id}, 'Passenger in car')">Passenger in car</button>
+                    <button class="btn btn-sm btn-success" onclick="updateStatus(${order.id}, 'Completed')">Complete</button>
+                    <button class="btn btn-sm btn-primary" onclick="acceptOrder(${order.id})">Accept</button>
                 </div>
             </div>
         </div>
@@ -290,7 +289,7 @@ async function loadDriverHistory() {
     const container = document.getElementById('historyList');
     
     if (!orders.length) {
-        container.innerHTML = '<div class="alert alert-info">Нет выполненных заказов</div>';
+        container.innerHTML = '<div class="alert alert-info">No completed orders</div>';
         return;
     }
     
@@ -298,9 +297,9 @@ async function loadDriverHistory() {
         <div class="card mb-2">
             <div class="card-body">
                 <div>${order.pickup_address} → ${order.dropoff_address}</div>
-                <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
-                <div>Статус: ${order.status}</div>
-                <div>Дата: ${order.created_at}</div>
+                <div>Tariff: ${order.tariff} | Price: ${order.price} RUB</div>
+                <div>Status: ${order.status}</div>
+                <div>Date: ${order.created_at}</div>
             </div>
         </div>
     `).join('');
@@ -312,7 +311,7 @@ async function acceptOrder(orderId) {
     formData.append('driver_id', driverId);
     
     await fetch(`/assign-order/${orderId}`, { method: 'POST', body: formData });
-    alert(`Заказ ${orderId} принят`);
+    alert(`Order ${orderId} accepted`);
     loadDriverOrders();
     loadDriverHistory();
 }
@@ -321,7 +320,7 @@ async function updateStatus(orderId, status) {
     const formData = new FormData();
     formData.append('status', status);
     await fetch(`/update-order-status/${orderId}`, { method: 'POST', body: formData });
-    alert(`Статус изменён на "${status}"`);
+    alert(`Status changed to "${status}"`);
     loadDriverOrders();
     loadDriverHistory();
 }
@@ -342,7 +341,7 @@ if (window.location.pathname === '/login-user') {
             if (result.success) {
                 localStorage.setItem('userId', result.user_id);
                 localStorage.setItem('userName', result.fullname);
-                alert(`Добро пожаловать, ${result.fullname}!`);
+                alert(`Welcome, ${result.fullname}!`);
                 window.location.href = '/user-profile';
             } else {
                 alert(result.error);
@@ -367,10 +366,10 @@ if (window.location.pathname === '/register') {
             const result = await response.json();
             
             if (result.success) {
-                alert('Регистрация успешна. Теперь войдите.');
+                alert('Registration successful. Please login.');
                 window.location.href = '/login-user';
             } else {
-                alert(result.error || 'Ошибка регистрации');
+                alert(result.error || 'Registration error');
             }
         });
     }
@@ -392,7 +391,7 @@ if (window.location.pathname === '/user-profile') {
         const container = document.getElementById('ordersHistory');
         
         if (!orders.length) {
-            container.innerHTML = '<div class="alert alert-info">У вас пока нет заказов</div>';
+            container.innerHTML = '<div class="alert alert-info">No orders yet</div>';
             return;
         }
         
@@ -401,9 +400,9 @@ if (window.location.pathname === '/user-profile') {
                 <div class="card-body">
                     <div>${order.date}</div>
                     <div>${order.pickup} → ${order.dropoff}</div>
-                    <div>${order.tariff} | ${order.price} ₽</div>
-                    <div>Статус: ${order.status}</div>
-                    <a href="/order/${order.id}" class="btn btn-sm btn-info mt-2">Детали</a>
+                    <div>${order.tariff} | ${order.price} RUB</div>
+                    <div>Status: ${order.status}</div>
+                    <a href="/order/${order.id}" class="btn btn-sm btn-info mt-2">Details</a>
                 </div>
             </div>
         `).join('');
@@ -429,75 +428,17 @@ if (window.location.pathname === '/application') {
             formData.append('role', document.getElementById('appRole').value);
             
             await fetch('/save-application', { method: 'POST', body: formData });
-            alert('Спасибо! Мы свяжемся с вами.');
+            alert('Thank you! We will contact you.');
             window.location.href = '/login';
         });
     }
 }
 
-if (window.location.pathname.includes('/order/')) {
-    const statusSpan = document.getElementById('status');
-    if (statusSpan && statusSpan.innerText === 'Завершена') {
-        const ratingBlock = document.getElementById('ratingBlock');
-        if (ratingBlock) ratingBlock.style.display = 'block';
-    }
-    
-    const stars = document.querySelectorAll('.stars span');
-    stars.forEach(star => {
-        star.addEventListener('click', function() {
-            const rating = this.getAttribute('data-rating');
-            alert('Оценка: ' + rating + ' звёзд');
-        });
-    });
-    
-    const submitReviewBtn = document.getElementById('submitReviewBtn');
-    if (submitReviewBtn) {
-        submitReviewBtn.addEventListener('click', function() {
-            const review = document.getElementById('review').value;
-            alert(review ? 'Спасибо за отзыв: ' + review : 'Спасибо за оценку!');
+if (window.location.pathname === '/order') {
+    const stars = document.querySelectorAll('.stars');
+    if (stars.length) {
+        stars.forEach(star => {
+            star.addEventListener('click', () => alert('Rating saved'));
         });
     }
-    
-    const simulatePaymentBtn = document.getElementById('simulatePaymentBtn');
-    if (simulatePaymentBtn) {
-        simulatePaymentBtn.addEventListener('click', function() {
-            alert('Оплата прошла успешно (тестовый режим)');
-        });
-    }
-}
-
-if (window.location.pathname === '/admin') {
-    let drivers = [];
-    
-    fetch('/api/all-drivers').then(r => r.json()).then(data => {
-        drivers = data;
-        document.getElementById('driversList').innerHTML = drivers.map(d => 
-            `<div class="card mb-2 p-2">${d.fullname} (${d.phone})</div>`
-        ).join('');
-        
-        fetch('/api/all-orders').then(r => r.json()).then(data => {
-            document.getElementById('ordersList').innerHTML = data.map(o => `
-                <div class="card mb-2 p-2">
-                    Заказ ${o.id}: ${o.pickup_address} → ${o.dropoff_address} (${o.status})
-                    <select id="driver_${o.id}" class="form-select mt-2">
-                        <option value="">Выберите водителя</option>
-                        ${drivers.map(d => `<option value="${d.id}">${d.fullname}</option>`).join('')}
-                    </select>
-                    <button class="btn btn-sm btn-primary mt-2" onclick="assignOrder(${o.id})">Назначить</button>
-                </div>
-            `).join('');
-        });
-    });
-    
-    window.assignOrder = function(orderId) {
-        const driverId = document.getElementById(`driver_${orderId}`).value;
-        if (!driverId) return alert('Выберите водителя');
-        const formData = new FormData();
-        formData.append('order_id', orderId);
-        formData.append('driver_id', driverId);
-        fetch('/api/assign-order', { method: 'POST', body: formData }).then(() => {
-            alert('Назначено');
-            location.reload();
-        });
-    };
 }
