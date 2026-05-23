@@ -2,157 +2,390 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gin Taxi</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.cdnfonts.com/css/southghetto" rel="stylesheet">
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
     <style>
-        /* Дополнительные стили для модальных окон, которых нет в style.css */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SouthGhetto', 'Segoe UI', sans-serif;
+            background: white;
+            min-height: 100vh;
+            color: black;
+            text-transform: uppercase;
+        }
+        
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* ШАПКА */
+        .header {
+            background: #87CEFA;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        
+        .user-status a {
+            color: black;
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 15px;
+        }
+        
+        /* ОСНОВНОЙ КОНТЕНТ */
+        .main-content {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        /* ЛЕВАЯ КОЛОНКА - 20% (кнопки меньше) */
+        .sidebar {
+            width: 20%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        /* КАРТИНКА БЕЗ ГРАНИЦ */
+        .logo-image-card {
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .logo-image-card img {
+            width: 100%;
+            max-width: 180px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            border: none;
+            outline: none;
+        }
+        
+        .logo-image-card p {
+            margin-top: 8px;
+            font-size: 14px;
+            color: black;
+        }
+        
+        /* КНОПКИ */
+        .action-card {
+            background: #87CEFA;
+            border-radius: 8px;
+            padding: 10px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .action-card:hover {
+            background: #6bb5e0;
+        }
+        
+        .action-card h3 {
+            font-size: 13px;
+            font-weight: normal;
+            color: black;
+            margin-bottom: 0;
+        }
+        
+        /* КНОПКА ВОДИТЕЛЯ - ПОЛУКРУГОМ, ПРИЛЕГАЕТ К ЛЕВОМУ КРАЮ, ВНИЗУ */
+        .driver-card {
+            background: #87CEFA;
+            border-radius: 0 30px 30px 0;
+            padding: 10px 15px;
+            margin-left: -20px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: calc(100% + 20px);
+            margin-top: auto;
+        }
+        
+        .driver-card:hover {
+            background: #6bb5e0;
+        }
+        
+        .driver-card h3 {
+            font-size: 13px;
+            font-weight: normal;
+            color: black;
+            margin-bottom: 3px;
+        }
+        
+        .driver-card p {
+            font-size: 10px;
+            color: #555;
+        }
+        
+        /* КАРТА - БОЛЬШЕ (80%) */
+        .map-container {
+            width: 80%;
+            background: #e8f0f8;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+            min-height: 550px;
+        }
+        
+        /* ПОДВАЛ */
+        .footer {
+            background: #87CEFA;
+            text-align: center;
+            padding: 12px;
+            font-size: 11px;
+            margin-top: auto;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-content span {
+            color: black;
+        }
+        
+        /* МОДАЛЬНЫЕ ОКНА */
         .modal {
+            display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 20px;
-            border-radius: 15px;
-            width: 350px;
+            padding: 25px;
+            border-radius: 12px;
+            width: 380px;
+            max-width: 90%;
             z-index: 1000;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border: 1px solid #ddd;
         }
+        
+        .modal h3 {
+            margin-bottom: 15px;
+            color: black;
+            font-size: 16px;
+            text-align: center;
+        }
+        
         .modal input, .modal select, .modal textarea {
             width: 100%;
-            margin: 10px 0;
             padding: 10px;
+            margin-bottom: 12px;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-family: 'SouthGhetto', sans-serif;
+            font-size: 12px;
+            background: white;
+            color: black;
         }
+        
         .modal button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
+            background: #87CEFA;
             border: none;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
+            color: black;
             font-weight: bold;
             cursor: pointer;
+            width: 100%;
+            font-family: 'SouthGhetto', sans-serif;
+            font-size: 12px;
+            margin-top: 5px;
         }
-        .modal .btn-primary {
-            background: #0dcaf0;
-            color: white;
+        
+        .modal button:hover {
+            background: #6bb5e0;
         }
-        .modal .btn-primary:hover {
-            background: #0b5ed7;
-        }
+        
         .modal .btn-secondary {
-            background: #6c757d;
-            color: white;
+            background: #e0e0e0;
+            margin-top: 8px;
         }
+        
         .modal .btn-secondary:hover {
-            background: #5a6268;
+            background: #ccc;
         }
+        
         .overlay {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.4);
             z-index: 999;
         }
-        .card {
+        
+        /* КАРТОЧКИ В ПРОФИЛЕ */
+        .order-card {
             background: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 10px;
-            margin: 10px 0;
+            margin-bottom: 8px;
+            border-left: 3px solid #87CEFA;
+            font-size: 11px;
         }
-        .card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .sidebar, .map-container {
+                width: 100%;
+            }
+            .driver-card {
+                margin-left: 0;
+                border-radius: 8px;
+                width: 100%;
+            }
+            .footer-content {
+                gap: 12px;
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <span>🚕 Gin Taxi</span>
-    <span id="userStatus">
-        <a href="#" onclick="showLoginModal()">Войти</a> | 
-        <a href="#" onclick="showRegisterModal()">Регистрация</a>
-    </span>
-</div>
-
-<div class="main">
-    <div class="sidebar">
-        <button id="orderBtn">🚕 Выбрать тариф</button>
-        <button id="phoneOrderBtn">📞 Заказ по телефону</button>
-        <button id="commentBtn">💬 Комментарий водителю</button>
-        <button id="driverLoginBtn">👨‍✈️ Водитель</button>
+<div class="page-container">
+    
+    <header class="header">
+        <div class="user-status">
+            <a href="#" onclick="showLoginModal()">Войти</a>
+            <a href="#" onclick="showRegisterModal()">Регистрация</a>
+        </div>
+    </header>
+    
+    <div class="main-content">
+        
+        <aside class="sidebar">
+            
+            <div class="logo-image-card" onclick="location.reload()">
+                <img src="/static/gin_photo.jpg" alt="Gin">
+                <p>Gin Taxi</p>
+            </div>
+            
+            <div class="action-card" id="phoneOrderBtn">
+                <h3>Заказ по телефону</h3>
+            </div>
+            
+            <div class="action-card" id="orderBtn">
+                <h3>Выбрать тариф</h3>
+            </div>
+            
+            <div class="action-card" id="commentBtn">
+                <h3>Комментарий водителю</h3>
+            </div>
+            
+            <div class="driver-card" id="driverLoginBtn">
+                <h3>Войти в профиль</h3>
+                <p>Работа в такси</p>
+            </div>
+            
+        </aside>
+        
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+        
     </div>
-    <div class="map-container">
-        <div id="map"></div>
-    </div>
-</div>
-
-<div class="footer">
-    <p>Ибрагимова Ф.Н. | Учебный проект | Gin Taxi 2026</p>
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <span>Ибрагимова Ф.Н.</span>
+            <span>Учебный проект</span>
+            <span>Gin Taxi 2026</span>
+        </div>
+    </footer>
+    
 </div>
 
 <!-- Модалка заказа -->
-<div id="orderModal" class="modal" style="display: none;">
-    <h3 style="margin-top: 0;">Заказ такси</h3>
+<div id="orderModal" class="modal">
+    <h3>Заказ такси</h3>
     <input type="text" id="orderName" placeholder="ФИО">
-    <input type="text" id="orderPhone" placeholder="Телефон">
-    <input type="text" id="orderPickup" placeholder="Откуда">
-    <input type="text" id="orderDropoff" placeholder="Куда">
+    <input type="tel" id="orderPhone" placeholder="Телефон">
+    <input type="text" id="orderPickup" placeholder="Адрес подачи">
+    <input type="text" id="orderDropoff" placeholder="Адрес назначения">
     <select id="orderTariff">
-        <option>Эконом</option>
-        <option>Комфорт</option>
-        <option>Бизнес</option>
+        <option value="Эконом">Эконом - 25 руб/км</option>
+        <option value="Комфорт">Комфорт - 35 руб/км</option>
+        <option value="Бизнес">Бизнес - 50 руб/км</option>
     </select>
-    <div id="pricePreview" style="margin: 10px 0; color: #0b5ed7; font-weight: bold;"></div>
-    <button id="submitOrderBtn" class="btn-primary">Заказать</button>
+    <div id="pricePreview" style="margin: 8px 0; font-size: 12px; font-weight: bold; color: #87CEFA;"></div>
+    <button id="submitOrderBtn">Заказать такси</button>
     <button onclick="closeOrderModal()" class="btn-secondary">Отмена</button>
 </div>
 
 <!-- Модалка комментария -->
-<div id="commentModal" class="modal" style="display: none;">
-    <h3 style="margin-top: 0;">Комментарий водителю</h3>
-    <textarea id="driverComment" rows="3" placeholder="Ваши пожелания..."></textarea>
-    <button id="sendCommentBtn" class="btn-primary">Отправить</button>
+<div id="commentModal" class="modal">
+    <h3>Комментарий водителю</h3>
+    <textarea id="driverComment" rows="4" placeholder="Ваши пожелания..."></textarea>
+    <button id="sendCommentBtn">Отправить</button>
     <button onclick="closeCommentModal()" class="btn-secondary">Отмена</button>
 </div>
 
-<!-- Модалка входа -->
-<div id="loginModal" class="modal" style="display: none;">
-    <h3 style="margin-top: 0;">Вход</h3>
+<!-- Модалка входа пользователя -->
+<div id="loginModal" class="modal">
+    <h3>Вход пользователя</h3>
     <input type="email" id="loginEmail" placeholder="Email">
     <input type="password" id="loginPassword" placeholder="Пароль">
-    <button id="doLoginBtn" class="btn-primary">Войти</button>
+    <button id="doLoginBtn">Войти</button>
     <button onclick="closeLoginModal()" class="btn-secondary">Отмена</button>
+    <div style="text-align: center; margin-top: 10px; font-size: 11px;">
+        <a href="#" onclick="closeLoginModal(); showRegisterModal();">Нет аккаунта? Зарегистрироваться</a>
+    </div>
 </div>
 
 <!-- Модалка регистрации -->
-<div id="registerModal" class="modal" style="display: none;">
-    <h3 style="margin-top: 0;">Регистрация</h3>
+<div id="registerModal" class="modal">
+    <h3>Регистрация</h3>
     <input type="text" id="regName" placeholder="ФИО">
-    <input type="text" id="regPhone" placeholder="Телефон">
+    <input type="tel" id="regPhone" placeholder="Телефон">
     <input type="email" id="regEmail" placeholder="Email">
     <input type="password" id="regPassword" placeholder="Пароль">
-    <button id="doRegisterBtn" class="btn-primary">Зарегистрироваться</button>
+    <button id="doRegisterBtn">Зарегистрироваться</button>
     <button onclick="closeRegisterModal()" class="btn-secondary">Отмена</button>
+    <div style="text-align: center; margin-top: 10px; font-size: 11px;">
+        <a href="#" onclick="closeRegisterModal(); showLoginModal();">Уже есть аккаунт? Войти</a>
+    </div>
 </div>
 
-<!-- Модалка профиля -->
-<div id="profileModal" class="modal" style="display: none; width: 450px;">
-    <h3 style="margin-top: 0;">Мой профиль</h3>
-    <div id="profileInfo"></div>
+<!-- Модалка профиля пользователя -->
+<div id="profileModal" class="modal" style="width: 450px;">
+    <h3>Мой профиль</h3>
+    <div id="profileInfo" style="margin-bottom: 15px;"></div>
     <div id="ordersHistory"></div>
-    <button onclick="logout()" class="btn-secondary" style="background: #dc3545;">Выйти</button>
+    <button onclick="logout()" style="background: #dc3545; margin-top: 15px;">Выйти</button>
     <button onclick="closeProfileModal()" class="btn-secondary">Закрыть</button>
 </div>
 
-<div id="overlay" class="overlay" style="display: none;"></div>
+<div id="overlay" class="overlay"></div>
 
 <script>
     // ========== ПЕРЕМЕННЫЕ ==========
@@ -164,7 +397,11 @@
     function initMap() {
         if (typeof ymaps === 'undefined') { setTimeout(initMap, 500); return; }
         ymaps.ready(function() {
-            map = new ymaps.Map('map', { center: [55.751244, 37.618423], zoom: 12, controls: ['zoomControl'] });
+            map = new ymaps.Map('map', {
+                center: [55.751244, 37.618423],
+                zoom: 12,
+                controls: ['zoomControl', 'fullscreenControl']
+            });
             map.events.add('click', function(e) {
                 var coords = e.get('coords');
                 document.getElementById('orderPickup').value = coords[0].toFixed(4) + ', ' + coords[1].toFixed(4);
@@ -196,20 +433,30 @@
     }
     function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; hideOverlay(); }
     
-    function makePhoneCall() { alert('Звонок +7 (812) 123-45-67'); }
+    function makePhoneCall() { window.location.href = 'tel:+78121234567'; }
     
     function calculatePrice() {
         var pickup = document.getElementById('orderPickup').value;
         var dropoff = document.getElementById('orderDropoff').value;
+        var tariff = document.getElementById('orderTariff').value;
         if (pickup && dropoff) {
-            document.getElementById('pricePreview').innerHTML = 'Примерная стоимость: 250 ₽';
+            var pricePerKm = 25;
+            if (tariff === 'Комфорт') pricePerKm = 35;
+            if (tariff === 'Бизнес') pricePerKm = 50;
+            var price = 10 * pricePerKm;
+            document.getElementById('pricePreview').innerHTML = 'Примерная стоимость: ' + price + ' ₽';
         }
     }
     
     function sendComment() {
         var comment = document.getElementById('driverComment').value;
-        alert('Комментарий: ' + comment);
-        closeCommentModal();
+        if (comment) {
+            alert('Комментарий отправлен: ' + comment);
+            document.getElementById('driverComment').value = '';
+            closeCommentModal();
+        } else {
+            alert('Введите комментарий');
+        }
     }
     
     function logout() {
@@ -230,17 +477,32 @@
             return;
         }
         
+        var pricePerKm = 25;
+        if (tariff === 'Комфорт') pricePerKm = 35;
+        if (tariff === 'Бизнес') pricePerKm = 50;
+        var price = 10 * pricePerKm;
+        
         var formData = new FormData();
         formData.append('pickup', pickup);
         formData.append('dropoff', dropoff);
         formData.append('tariff', tariff);
-        formData.append('price', 250);
-        if (userId) formData.append('user_id', userId);
-        else { formData.append('guest_name', name); formData.append('guest_phone', phone); formData.append('guest_email', ''); }
+        formData.append('price', price);
+        
+        if (userId) {
+            formData.append('user_id', userId);
+        } else {
+            formData.append('guest_name', name);
+            formData.append('guest_phone', phone);
+            formData.append('guest_email', '');
+        }
         
         await fetch('/save-order', { method: 'POST', body: formData });
-        alert('Заказ оформлен!');
+        alert('Заказ оформлен!\nОткуда: ' + pickup + '\nКуда: ' + dropoff + '\nСтоимость: ' + price + ' ₽');
         closeOrderModal();
+        document.getElementById('orderName').value = '';
+        document.getElementById('orderPhone').value = '';
+        document.getElementById('orderPickup').value = '';
+        document.getElementById('orderDropoff').value = '';
     }
     
     // ========== РЕГИСТРАЦИЯ ==========
@@ -257,10 +519,12 @@
             alert('Регистрация успешна! Теперь войдите.');
             closeRegisterModal();
             showLoginModal();
-        } else alert(result.error);
+        } else {
+            alert(result.error || 'Ошибка регистрации');
+        }
     }
     
-    // ========== ВХОД ==========
+    // ========== ВХОД ПОЛЬЗОВАТЕЛЯ ==========
     async function login() {
         var formData = new FormData();
         formData.append('email', document.getElementById('loginEmail').value);
@@ -271,21 +535,31 @@
         if (result.success) {
             localStorage.setItem('userId', result.user_id);
             localStorage.setItem('userName', result.fullname);
-            alert('Добро пожаловать, ' + result.fullname);
+            alert('Добро пожаловать, ' + result.fullname + '!');
             location.reload();
-        } else alert(result.error);
+        } else {
+            alert(result.error);
+        }
     }
     
-    // ========== ПРОФИЛЬ ==========
+    // ========== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ==========
     async function loadProfile() {
         var id = localStorage.getItem('userId');
         if (!id) return;
         var response = await fetch('/user-orders/' + id);
         var orders = await response.json();
-        document.getElementById('profileInfo').innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p>';
-        var html = '<h4>История заказов</h4>';
-        if (orders.length === 0) html += '<p>Нет заказов</p>';
-        else orders.forEach(o => { html += '<div class="card">' + o.pickup + ' → ' + o.dropoff + '<br>' + o.tariff + ' | ' + o.price + ' ₽<br><small>' + o.status + '</small></div>'; });
+        document.getElementById('profileInfo').innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p><hr>';
+        var html = '<h4 style="margin: 10px 0;">История заказов</h4>';
+        if (orders.length === 0) {
+            html += '<p>У вас пока нет заказов</p>';
+        } else {
+            orders.forEach(function(order) {
+                html += '<div class="order-card"><strong>' + order.pickup + '</strong> → <strong>' + order.dropoff + '</strong><br>' +
+                        'Тариф: ' + order.tariff + ' | Цена: ' + order.price + ' ₽<br>' +
+                        'Статус: ' + order.status + '<br>' +
+                        '<small>' + new Date(order.date).toLocaleString() + '</small></div>';
+            });
+        }
         document.getElementById('ordersHistory').innerHTML = html;
     }
     
@@ -301,9 +575,10 @@
     
     document.getElementById('orderPickup').addEventListener('input', calculatePrice);
     document.getElementById('orderDropoff').addEventListener('input', calculatePrice);
+    document.getElementById('orderTariff').addEventListener('change', calculatePrice);
     
     if (userId) {
-        document.getElementById('userStatus').innerHTML = '<a href="#" onclick="showProfileModal()">' + userName + '</a> | <a href="#" onclick="logout()">Выйти</a>';
+        document.getElementById('userStatus').innerHTML = '<a href="#" onclick="showProfileModal()">' + userName + '</a> <a href="#" onclick="logout()">Выйти</a>';
     }
     
     window.closeOrderModal = closeOrderModal;
