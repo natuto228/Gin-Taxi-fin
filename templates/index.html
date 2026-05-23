@@ -2,122 +2,249 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gin Taxi</title>
-    <link href="https://fonts.cdnfonts.com/css/southghetto" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: white; }
+        .header { background: #87CEFA; padding: 15px; display: flex; justify-content: space-between; }
+        .main { display: flex; padding: 20px; gap: 20px; }
+        .sidebar { width: 250px; display: flex; flex-direction: column; gap: 10px; }
+        .action-card, .driver-card { background: #87CEFA; padding: 12px; text-align: center; cursor: pointer; border-radius: 8px; }
+        .driver-card { margin-top: auto; border-radius: 0 30px 30px 0; margin-left: -20px; width: calc(100% + 20px); text-align: left; }
+        .driver-card p { font-size: 11px; color: rgba(0,0,0,0.7); }
+        .map-container { flex: 1; position: relative; }
+        #map { height: 550px; width: 100%; border-radius: 12px; }
+        .search-overlay { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 8px; background: white; padding: 5px; border-radius: 30px; }
+        .search-overlay input { padding: 8px 15px; border-radius: 30px; border: none; width: 250px; }
+        .search-overlay button { background: #87CEFA; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
+        .geolocation-btn { position: absolute; bottom: 20px; right: 20px; background: white; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 22px; }
+        .footer { background: #87CEFA; text-align: center; padding: 12px; margin-top: 20px; }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 12px; width: 350px; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .modal input, .modal select, .modal textarea { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
+        .modal button { background: #87CEFA; border: none; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 5px; }
+        .modal .btn-secondary { background: #e0e0e0; margin-top: 8px; }
+        .modal-link { text-align: center; margin-top: 10px; font-size: 12px; }
+        .modal-link a { color: #87CEFA; text-decoration: none; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        .order-card { border: 1px solid #ddd; padding: 10px; margin: 8px 0; border-radius: 6px; border-left: 3px solid #87CEFA; }
+        .logout-btn { background: #dc3545; margin-top: 15px; }
+        .user-status a, .lang-btn { color: black; text-decoration: none; margin-left: 15px; background: none; border: none; cursor: pointer; }
+        @media (max-width: 768px) { .main { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; } .driver-card { margin-left: 0; width: 100%; border-radius: 8px; } }
+    </style>
 </head>
 <body>
 
-<div class="page-container">
-    
-    <header class="header">
-        <div class="user-status">
-            <button class="lang-btn" id="langBtn">English</button>
-            <a href="#" id="showLoginBtn">Войти</a>
-            <a href="#" id="showRegisterBtn">Регистрация</a>
-        </div>
-    </header>
-    
-    <div class="main-content">
-        
-        <aside class="sidebar">
-            <div class="logo-image-card">
-                <img src="/static/gin_photo.jpg" alt="Gin">
-                <p>Gin Taxi</p>
-            </div>
-            <div class="action-card" id="phoneOrderBtn">
-                <h3>Заказ по телефону</h3>
-            </div>
-            <div class="action-card" id="orderBtn">
-                <h3>Выбрать тариф</h3>
-            </div>
-            <div class="action-card" id="commentBtn">
-                <h3>Комментарий водителю</h3>
-            </div>
-            <div class="driver-card" id="driverLoginBtn">
-                <h3>Войти в профиль</h3>
-                <p>Работа в такси</p>
-            </div>
-        </aside>
-        
-        <div class="map-container">
-            <div class="search-overlay">
-                <input type="text" id="searchAddressInput" placeholder="Поиск адреса">
-                <button id="searchAddressBtn">Найти</button>
-            </div>
-            <button class="geolocation-btn" id="geolocationBtn">📍</button>
-            <div id="map"></div>
-        </div>
-        
+<div class="header">
+    <span>🚕 Gin Taxi</span>
+    <div class="user-status" id="userStatus">
+        <a href="#" onclick="showLoginModal()">Войти</a>
+        <a href="#" onclick="showRegisterModal()">Регистрация</a>
     </div>
-    
-    <footer class="footer">
-        <div class="footer-content">
-            <span>Ибрагимова Ф.Н.</span>
-            <span>Учебный проект</span>
-            <span>Gin Taxi 2026</span>
+</div>
+
+<div class="main">
+    <div class="sidebar">
+        <div class="action-card" onclick="makePhoneCall()">📞 Заказ по телефону</div>
+        <div class="action-card" onclick="openOrderModal()">🚕 Выбрать тариф</div>
+        <div class="action-card" onclick="openCommentModal()">💬 Комментарий водителю</div>
+        <div class="driver-card" onclick="window.location.href='/login'">👨‍✈️ Войти в профиль<br><p>Работа в такси</p></div>
+    </div>
+    <div class="map-container">
+        <div class="search-overlay">
+            <input type="text" id="addressSearch" placeholder="Поиск адреса">
+            <button onclick="searchAddress()">Найти</button>
         </div>
-    </footer>
-    
+        <button class="geolocation-btn" onclick="getMyLocation()">📍</button>
+        <div id="map"></div>
+    </div>
 </div>
 
-<!-- Модальные окна -->
-<div id="orderModal" class="modal">
-    <h3>Заказ такси</h3>
+<div class="footer">
+    Ибрагимова Ф.Н. | Учебный проект | Gin Taxi 2026
+</div>
+
+<!-- Модалки -->
+<div id="orderModal" class="modal"><h3>Заказ такси</h3>
     <input type="text" id="orderName" placeholder="ФИО">
-    <input type="tel" id="orderPhone" placeholder="Телефон">
-    <input type="text" id="orderPickup" placeholder="Адрес подачи">
-    <input type="text" id="orderDropoff" placeholder="Адрес назначения">
-    <select id="orderTariff">
-        <option value="Эконом">Эконом - 25 руб/км</option>
-        <option value="Комфорт">Комфорт - 35 руб/км</option>
-        <option value="Бизнес">Бизнес - 50 руб/км</option>
-    </select>
-    <div id="pricePreview"></div>
-    <button id="submitOrderBtn">Заказать такси</button>
-    <button id="closeOrderBtn" class="btn-secondary">Отмена</button>
+    <input type="text" id="orderPhone" placeholder="Телефон">
+    <input type="text" id="orderPickup" placeholder="Откуда">
+    <input type="text" id="orderDropoff" placeholder="Куда">
+    <select id="orderTariff"><option>Эконом</option><option>Комфорт</option><option>Бизнес</option></select>
+    <div id="pricePreview" style="margin:5px 0; color:#87CEFA;"></div>
+    <button onclick="submitOrder()">Заказать</button>
+    <button onclick="closeOrderModal()" class="btn-secondary">Отмена</button>
 </div>
 
-<div id="commentModal" class="modal">
-    <h3>Комментарий водителю</h3>
-    <textarea id="driverComment" rows="4" placeholder="Ваши пожелания..."></textarea>
-    <button id="sendCommentBtn">Отправить</button>
-    <button id="closeCommentBtn" class="btn-secondary">Отмена</button>
+<div id="commentModal" class="modal"><h3>Комментарий водителю</h3>
+    <textarea id="driverComment" rows="3"></textarea>
+    <button onclick="sendComment()">Отправить</button>
+    <button onclick="closeCommentModal()" class="btn-secondary">Отмена</button>
 </div>
 
-<div id="loginModal" class="modal">
-    <h3>Вход пользователя</h3>
+<div id="loginModal" class="modal"><h3>Вход пользователя</h3>
     <input type="email" id="loginEmail" placeholder="Email">
     <input type="password" id="loginPassword" placeholder="Пароль">
-    <button id="doLoginBtn">Войти</button>
-    <button id="closeLoginBtn" class="btn-secondary">Отмена</button>
-    <div class="modal-link"><a href="#" id="switchToRegister">Нет аккаунта? Зарегистрироваться</a></div>
+    <button onclick="loginUser()">Войти</button>
+    <button onclick="closeLoginModal()" class="btn-secondary">Отмена</button>
+    <div class="modal-link"><a href="#" onclick="closeLoginModal(); showRegisterModal();">Нет аккаунта? Регистрация</a></div>
 </div>
 
-<div id="registerModal" class="modal">
-    <h3>Регистрация</h3>
+<div id="registerModal" class="modal"><h3>Регистрация</h3>
     <input type="text" id="regName" placeholder="ФИО">
-    <input type="tel" id="regPhone" placeholder="Телефон">
+    <input type="text" id="regPhone" placeholder="Телефон">
     <input type="email" id="regEmail" placeholder="Email">
     <input type="password" id="regPassword" placeholder="Пароль">
-    <button id="doRegisterBtn">Зарегистрироваться</button>
-    <button id="closeRegisterBtn" class="btn-secondary">Отмена</button>
-    <div class="modal-link"><a href="#" id="switchToLogin">Уже есть аккаунт? Войти</a></div>
+    <button onclick="registerUser()">Зарегистрироваться</button>
+    <button onclick="closeRegisterModal()" class="btn-secondary">Отмена</button>
+    <div class="modal-link"><a href="#" onclick="closeRegisterModal(); showLoginModal();">Уже есть аккаунт? Войти</a></div>
 </div>
 
-<div id="profileModal" class="modal" style="width: 450px;">
-    <h3>Мой профиль</h3>
+<div id="profileModal" class="modal" style="width:450px;"><h3>Мой профиль</h3>
     <div id="profileInfo"></div>
     <div id="ordersHistory"></div>
-    <button id="logoutBtn" class="logout-btn">Выйти</button>
-    <button id="closeProfileBtn" class="btn-secondary">Закрыть</button>
+    <button onclick="logout()" class="logout-btn">Выйти</button>
+    <button onclick="closeProfileModal()" class="btn-secondary">Закрыть</button>
 </div>
 
-<div id="overlay" class="overlay"></div>
+<div id="overlay" class="overlay" onclick="closeAllModals()"></div>
 
-<script src="/static/script.js"></script>
+<script>
+    // ========== ПЕРЕМЕННЫЕ ==========
+    let map;
+    let userId = localStorage.getItem('userId');
+    let userName = localStorage.getItem('userName');
+
+    // ========== КАРТА ==========
+    function initMap() {
+        if (typeof ymaps === 'undefined') { setTimeout(initMap, 500); return; }
+        ymaps.ready(() => {
+            map = new ymaps.Map('map', { center: [55.751244, 37.618423], zoom: 12, controls: ['zoomControl'] });
+            map.events.add('click', (e) => {
+                document.getElementById('orderPickup').value = e.get('coords')[0].toFixed(4) + ', ' + e.get('coords')[1].toFixed(4);
+            });
+        });
+    }
+    initMap();
+
+    // ========== ПОИСК ==========
+    function searchAddress() {
+        const query = document.getElementById('addressSearch').value;
+        if (!query) return;
+        ymaps.geocode(query, { results: 1 }).then(res => {
+            const coords = res.geoObjects.get(0).geometry.getCoordinates();
+            map.setCenter(coords, 15);
+        }).catch(() => alert('Адрес не найден'));
+    }
+
+    function getMyLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => map.setCenter([pos.coords.latitude, pos.coords.longitude], 15));
+        } else alert('Геолокация не поддерживается');
+    }
+
+    // ========== МОДАЛКИ ==========
+    function showOverlay() { document.getElementById('overlay').style.display = 'block'; }
+    function hideOverlay() { document.getElementById('overlay').style.display = 'none'; }
+    function closeAllModals() { hideOverlay(); document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+    function openOrderModal() { document.getElementById('orderModal').style.display = 'block'; showOverlay(); }
+    function closeOrderModal() { document.getElementById('orderModal').style.display = 'none'; hideOverlay(); }
+    function openCommentModal() { document.getElementById('commentModal').style.display = 'block'; showOverlay(); }
+    function closeCommentModal() { document.getElementById('commentModal').style.display = 'none'; hideOverlay(); }
+    function showLoginModal() { document.getElementById('loginModal').style.display = 'block'; showOverlay(); }
+    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; hideOverlay(); }
+    function showRegisterModal() { document.getElementById('registerModal').style.display = 'block'; showOverlay(); }
+    function closeRegisterModal() { document.getElementById('registerModal').style.display = 'none'; hideOverlay(); }
+    function showProfileModal() { document.getElementById('profileModal').style.display = 'block'; showOverlay(); loadProfile(); }
+    function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; hideOverlay(); }
+
+    function makePhoneCall() { window.location.href = 'tel:+78121234567'; }
+
+    function calculatePrice() {
+        const p = document.getElementById('orderPickup').value;
+        const d = document.getElementById('orderDropoff').value;
+        if (p && d) document.getElementById('pricePreview').innerHTML = 'Примерная стоимость: 250 ₽';
+    }
+    document.getElementById('orderPickup').addEventListener('input', calculatePrice);
+    document.getElementById('orderDropoff').addEventListener('input', calculatePrice);
+
+    function sendComment() {
+        const c = document.getElementById('driverComment').value;
+        alert(c ? 'Комментарий: ' + c : 'Введите комментарий');
+        closeCommentModal();
+    }
+
+    async function submitOrder() {
+        const name = document.getElementById('orderName').value;
+        const phone = document.getElementById('orderPhone').value;
+        const pickup = document.getElementById('orderPickup').value;
+        const dropoff = document.getElementById('orderDropoff').value;
+        if (!name || !phone || !pickup || !dropoff) { alert('Заполните поля'); return; }
+        const fd = new FormData();
+        fd.append('pickup', pickup); fd.append('dropoff', dropoff); fd.append('tariff', 'Эконом'); fd.append('price', 250);
+        if (userId) fd.append('user_id', userId);
+        else { fd.append('guest_name', name); fd.append('guest_phone', phone); fd.append('guest_email', ''); }
+        await fetch('/save-order', { method: 'POST', body: fd });
+        alert('Заказ оформлен!');
+        closeOrderModal();
+    }
+
+    async function registerUser() {
+        const fd = new FormData();
+        fd.append('fullname', document.getElementById('regName').value);
+        fd.append('phone', document.getElementById('regPhone').value);
+        fd.append('email', document.getElementById('regEmail').value);
+        fd.append('password', document.getElementById('regPassword').value);
+        const res = await fetch('/register', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) { alert('Регистрация успешна! Войдите.'); closeRegisterModal(); showLoginModal(); }
+        else alert(data.error || 'Ошибка');
+    }
+
+    async function loginUser() {
+        const fd = new FormData();
+        fd.append('email', document.getElementById('loginEmail').value);
+        fd.append('password', document.getElementById('loginPassword').value);
+        const res = await fetch('/login-user', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem('userId', data.user_id);
+            localStorage.setItem('userName', data.fullname);
+            alert('Добро пожаловать, ' + data.fullname);
+            location.reload();
+        } else alert(data.error);
+    }
+
+    async function loadProfile() {
+        const id = localStorage.getItem('userId');
+        if (!id) return;
+        const res = await fetch('/user-orders/' + id);
+        const orders = await res.json();
+        document.getElementById('profileInfo').innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p><hr>';
+        if (orders.length === 0) document.getElementById('ordersHistory').innerHTML = '<p>Нет заказов</p>';
+        else {
+            let html = '<h4>История заказов</h4>';
+            orders.forEach(o => html += `<div class="order-card"><strong>${o.pickup}</strong> → <strong>${o.dropoff}</strong><br>${o.tariff} | ${o.price} ₽<br>${o.status}<br><small>${new Date(o.date).toLocaleString()}</small></div>`);
+            document.getElementById('ordersHistory').innerHTML = html;
+        }
+    }
+
+    function logout() { localStorage.clear(); location.reload(); }
+
+    if (userId) {
+        document.getElementById('userStatus').innerHTML = `<a href="#" onclick="showProfileModal()">${userName}</a> <a href="#" onclick="logout()">Выйти</a>`;
+    }
+
+    window.openOrderModal = openOrderModal; window.closeOrderModal = closeOrderModal;
+    window.openCommentModal = openCommentModal; window.closeCommentModal = closeCommentModal;
+    window.showLoginModal = showLoginModal; window.closeLoginModal = closeLoginModal;
+    window.showRegisterModal = showRegisterModal; window.closeRegisterModal = closeRegisterModal;
+    window.closeProfileModal = closeProfileModal; window.makePhoneCall = makePhoneCall;
+    window.submitOrder = submitOrder; window.sendComment = sendComment;
+    window.registerUser = registerUser; window.loginUser = loginUser; window.logout = logout;
+    window.searchAddress = searchAddress; window.getMyLocation = getMyLocation;
+</script>
 
 </body>
 </html>
