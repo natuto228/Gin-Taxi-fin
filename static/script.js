@@ -4,6 +4,12 @@ let carMarker = null;
 let simulationInterval = null;
 
 function initMap() {
+    if (typeof ymaps === 'undefined') {
+        console.log('Яндекс.Карты не загружены, повтор через 0.5 сек');
+        setTimeout(initMap, 500);
+        return;
+    }
+    
     ymaps.ready(function() {
         map = new ymaps.Map('map', {
             center: [55.751244, 37.618423],
@@ -21,12 +27,15 @@ function initMap() {
             userMarker = new ymaps.Placemark(coords);
             map.geoObjects.add(userMarker);
         });
+        
+        console.log('Яндекс карта готова');
+        setTimeout(startSimulation, 2000);
     });
 }
 
 async function getAddressFromCoords(lat, lng) {
     try {
-        const response = await fetch(`https://geocode-maps.yandex.ru/1.x/?apikey=087a8bd0-4f5b-4b21-8e12-646e0b27a2c4&geocode=${lng},${lat}&format=json`);
+        const response = await fetch(`https://geocode-maps.yandex.ru/1.x/?geocode=${lng},${lat}&format=json`);
         const data = await response.json();
         const address = data.response.GeoObjectCollection.featureMember[0]?.GeoObject.metaDataProperty.GeocoderMetaData.text;
         return address || `${lat}, ${lng}`;
@@ -178,7 +187,45 @@ function sendComment() {
 function toggleLanguage() {
     const isRu = document.documentElement.lang === 'ru';
     document.documentElement.lang = isRu ? 'en' : 'ru';
-    alert(isRu ? 'Language switched to English' : 'Язык переключен на русский');
+    
+    const translations = {
+        'Заказ по телефону': 'Phone order',
+        'Выбрать тариф': 'Choose tariff',
+        'Комментарий водителю': 'Comment to driver',
+        'Войти в профиль': 'Login',
+        'Работа в такси': 'Work as taxi',
+        'Заказать такси': 'Order taxi',
+        'Отмена': 'Cancel',
+        'Отправить': 'Send',
+        'Войти': 'Login',
+        'English': 'Russian',
+        'Поиск адреса': 'Search address',
+        'Найти': 'Find',
+        'ФИО': 'Full name',
+        'Телефон': 'Phone',
+        'Адрес подачи': 'Pickup address',
+        'Адрес назначения': 'Dropoff address',
+        'Эконом - 25 руб/км': 'Econom - 25 RUB/km',
+        'Комфорт - 35 руб/км': 'Comfort - 35 RUB/km',
+        'Бизнес - 50 руб/км': 'Business - 50 RUB/km',
+        'Примерная стоимость': 'Estimated price'
+    };
+    
+    for (const [ru, en] of Object.entries(translations)) {
+        const elements = document.querySelectorAll('*');
+        elements.forEach(el => {
+            if (el.innerText === ru && isRu) {
+                el.innerText = en;
+            } else if (el.innerText === en && !isRu) {
+                el.innerText = ru;
+            }
+        });
+    }
+    
+    const langBtn = document.getElementById('langBtn');
+    if (langBtn) {
+        langBtn.innerText = isRu ? 'Russian' : 'English';
+    }
 }
 
 function initCarSimulation() {
@@ -191,7 +238,7 @@ function initCarSimulation() {
         [55.771244, 37.638423]
     ];
     
-    if (!carMarker) {
+    if (!carMarker && map) {
         carMarker = new ymaps.Placemark(path[0], {
             preset: 'islands#carIcon'
         });
@@ -199,6 +246,7 @@ function initCarSimulation() {
     }
     
     simulationInterval = setInterval(() => {
+        if (!carMarker || !map) return;
         step = (step + 1) % path.length;
         carMarker.geometry.setCoordinates(path[step]);
         map.setCenter(path[step], 15);
@@ -215,7 +263,6 @@ function startSimulation() {
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname === '/') {
         initMap();
-        setTimeout(startSimulation, 2000);
         
         document.getElementById('searchBtn')?.addEventListener('click', searchAddress);
         document.getElementById('myLocationBtn')?.addEventListener('click', setCurrentLocation);
@@ -223,6 +270,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('phoneOrderBtn')?.addEventListener('click', makePhoneCall);
         document.getElementById('commentBtn')?.addEventListener('click', openCommentModal);
         document.getElementById('driverLoginBtn')?.addEventListener('click', () => window.location.href = '/login');
+        
+        const langBtn = document.getElementById('langBtn');
+        if (langBtn) langBtn.addEventListener('click', toggleLanguage);
         
         const pickupInput = document.getElementById('orderPickup');
         const dropoffInput = document.getElementById('orderDropoff');
@@ -241,7 +291,7 @@ if (window.location.pathname === '/login') {
             e.preventDefault();
             const smsCode = document.getElementById('smsCode').value;
             if (smsCode !== '123456') {
-                alert('Invalid SMS code');
+                alert('Неверный SMS код');
                 return;
             }
             localStorage.setItem('driver', 'true');
