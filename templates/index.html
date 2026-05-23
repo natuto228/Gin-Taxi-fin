@@ -2,27 +2,34 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Gin Taxi - Тест кнопок</title>
+    <title>Gin Taxi - Заказ такси</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; }
-        button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; background: #87CEFA; border: none; border-radius: 5px; }
+        body { font-family: sans-serif; text-align: center; padding: 20px; }
+        #map { height: 400px; width: 100%; margin-top: 20px; }
+        button { margin: 5px; padding: 10px 20px; background: #87CEFA; border: none; border-radius: 5px; cursor: pointer; }
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid #ccc; z-index: 1000; }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        input, textarea { display: block; margin: 10px auto; padding: 5px; width: 90%; }
     </style>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
 </head>
 <body>
 
-<h1>Gin Taxi - Тест кнопок</h1>
+<h1>Gin Taxi</h1>
 
 <button id="orderBtn">Выбрать тариф</button>
 <button id="phoneOrderBtn">Заказ по телефону</button>
 <button id="commentBtn">Комментарий водителю</button>
 <button id="driverLoginBtn">Войти в профиль</button>
 
+<div id="map"></div>
+
 <!-- Модальное окно заказа -->
 <div id="orderModal" class="modal">
     <h3>Заказ такси</h3>
-    <input type="text" placeholder="ФИО" style="display:block; margin:10px 0;"><br>
+    <input type="text" id="orderName" placeholder="ФИО">
+    <input type="text" id="orderPickup" placeholder="Откуда">
+    <input type="text" id="orderDropoff" placeholder="Куда">
     <button id="submitOrderBtn">Заказать</button>
     <button onclick="closeOrderModal()">Отмена</button>
 </div>
@@ -30,7 +37,7 @@
 <!-- Модальное окно комментария -->
 <div id="commentModal" class="modal">
     <h3>Комментарий водителю</h3>
-    <textarea rows="3" cols="30" id="driverComment" placeholder="Ваши пожелания..."></textarea><br>
+    <textarea id="driverComment" rows="3" cols="30" placeholder="Ваши пожелания..."></textarea>
     <button id="sendCommentBtn">Отправить</button>
     <button onclick="closeCommentModal()">Отмена</button>
 </div>
@@ -38,25 +45,76 @@
 <div id="overlay" class="overlay" onclick="closeOrderModal(); closeCommentModal();"></div>
 
 <script>
-    // Функции
+    var map;
+    var userMarker = null;
+    
+    // ===== КАРТА =====
+    function initMap() {
+        if (typeof ymaps === 'undefined') {
+            setTimeout(initMap, 500);
+            return;
+        }
+        
+        ymaps.ready(function() {
+            map = new ymaps.Map('map', {
+                center: [55.751244, 37.618423],
+                zoom: 12,
+                controls: ['zoomControl', 'fullscreenControl']
+            });
+            
+            // Клик на карту
+            map.events.add('click', function(e) {
+                var coords = e.get('coords');
+                var pickupInput = document.getElementById('orderPickup');
+                if (pickupInput) {
+                    pickupInput.value = coords[0].toFixed(4) + ', ' + coords[1].toFixed(4);
+                }
+                
+                if (userMarker) {
+                    map.geoObjects.remove(userMarker);
+                }
+                userMarker = new ymaps.Placemark(coords);
+                map.geoObjects.add(userMarker);
+            });
+            
+            console.log('Яндекс карта загружена');
+        });
+    }
+    
+    // Запуск карты
+    initMap();
+    
+    // ===== КНОПКИ =====
     function openOrderModal() { document.getElementById('orderModal').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
     function closeOrderModal() { document.getElementById('orderModal').style.display = 'none'; document.getElementById('overlay').style.display = 'none'; }
     function openCommentModal() { document.getElementById('commentModal').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
     function closeCommentModal() { document.getElementById('commentModal').style.display = 'none'; document.getElementById('overlay').style.display = 'none'; }
-    function makePhoneCall() { alert('Звонок по телефону'); }
-    function submitOrder() { alert('Заказ оформлен'); closeOrderModal(); }
-    function sendComment() { alert('Комментарий отправлен: ' + document.getElementById('driverComment').value); closeCommentModal(); }
+    function makePhoneCall() { alert('Звонок по телефону +7 (812) 123-45-67'); }
+    function submitOrder() { 
+        var name = document.getElementById('orderName').value;
+        var pickup = document.getElementById('orderPickup').value;
+        var dropoff = document.getElementById('orderDropoff').value;
+        if (!name || !pickup || !dropoff) {
+            alert('Заполните все поля');
+            return;
+        }
+        alert('Заказ оформлен!\nОткуда: ' + pickup + '\nКуда: ' + dropoff);
+        closeOrderModal();
+    }
+    function sendComment() { 
+        var comment = document.getElementById('driverComment').value;
+        alert('Комментарий отправлен: ' + comment);
+        closeCommentModal();
+    }
     function goToLogin() { alert('Переход на страницу входа'); }
-
-    // Назначаем кнопки
+    
     document.getElementById('orderBtn').onclick = openOrderModal;
     document.getElementById('phoneOrderBtn').onclick = makePhoneCall;
     document.getElementById('commentBtn').onclick = openCommentModal;
     document.getElementById('driverLoginBtn').onclick = goToLogin;
     document.getElementById('submitOrderBtn').onclick = submitOrder;
     document.getElementById('sendCommentBtn').onclick = sendComment;
-
-    // Делаем функции глобальными для кнопок "Отмена"
+    
     window.closeOrderModal = closeOrderModal;
     window.closeCommentModal = closeCommentModal;
 </script>
