@@ -5,270 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gin Taxi</title>
     <link href="https://fonts.cdnfonts.com/css/southghetto" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'SouthGhetto', 'Segoe UI', sans-serif;
-            background: white;
-            min-height: 100vh;
-            color: black;
-            text-transform: uppercase;
-        }
-        
-        .page-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        
-        /* ШАПКА */
-        .header {
-            background: #87CEFA;
-            padding: 12px 25px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-        }
-        
-        .user-status a {
-            color: black;
-            text-decoration: none;
-            font-size: 14px;
-            margin-left: 15px;
-        }
-        
-        /* ОСНОВНОЙ КОНТЕНТ */
-        .main-content {
-            display: flex;
-            flex: 1;
-            padding: 20px;
-            gap: 20px;
-        }
-        
-        /* ЛЕВАЯ КОЛОНКА - 20% (кнопки меньше) */
-        .sidebar {
-            width: 20%;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        /* КАРТИНКА БЕЗ ГРАНИЦ */
-        .logo-image-card {
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-        
-        .logo-image-card img {
-            width: 100%;
-            max-width: 180px;
-            height: auto;
-            display: block;
-            margin: 0 auto;
-            border: none;
-            outline: none;
-        }
-        
-        .logo-image-card p {
-            margin-top: 8px;
-            font-size: 14px;
-            color: black;
-        }
-        
-        /* КНОПКИ */
-        .action-card {
-            background: #87CEFA;
-            border-radius: 8px;
-            padding: 10px 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .action-card:hover {
-            background: #6bb5e0;
-        }
-        
-        .action-card h3 {
-            font-size: 13px;
-            font-weight: normal;
-            color: black;
-            margin-bottom: 0;
-        }
-        
-        /* КНОПКА ВОДИТЕЛЯ - ПОЛУКРУГОМ, ПРИЛЕГАЕТ К ЛЕВОМУ КРАЮ, ВНИЗУ */
-        .driver-card {
-            background: #87CEFA;
-            border-radius: 0 30px 30px 0;
-            padding: 10px 15px;
-            margin-left: -20px;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: calc(100% + 20px);
-            margin-top: auto;
-        }
-        
-        .driver-card:hover {
-            background: #6bb5e0;
-        }
-        
-        .driver-card h3 {
-            font-size: 13px;
-            font-weight: normal;
-            color: black;
-            margin-bottom: 3px;
-        }
-        
-        .driver-card p {
-            font-size: 10px;
-            color: #555;
-        }
-        
-        /* КАРТА - БОЛЬШЕ (80%) */
-        .map-container {
-            width: 80%;
-            background: #e8f0f8;
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        #map {
-            height: 100%;
-            width: 100%;
-            min-height: 550px;
-        }
-        
-        /* ПОДВАЛ */
-        .footer {
-            background: #87CEFA;
-            text-align: center;
-            padding: 12px;
-            font-size: 11px;
-            margin-top: auto;
-        }
-        
-        .footer-content {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            flex-wrap: wrap;
-        }
-        
-        .footer-content span {
-            color: black;
-        }
-        
-        /* МОДАЛЬНЫЕ ОКНА */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            width: 380px;
-            max-width: 90%;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            border: 1px solid #ddd;
-        }
-        
-        .modal h3 {
-            margin-bottom: 15px;
-            color: black;
-            font-size: 16px;
-            text-align: center;
-        }
-        
-        .modal input, .modal select, .modal textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-family: 'SouthGhetto', sans-serif;
-            font-size: 12px;
-            background: white;
-            color: black;
-        }
-        
-        .modal button {
-            background: #87CEFA;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            font-family: 'SouthGhetto', sans-serif;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        
-        .modal button:hover {
-            background: #6bb5e0;
-        }
-        
-        .modal .btn-secondary {
-            background: #e0e0e0;
-            margin-top: 8px;
-        }
-        
-        .modal .btn-secondary:hover {
-            background: #ccc;
-        }
-        
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.4);
-            z-index: 999;
-        }
-        
-        /* КАРТОЧКИ В ПРОФИЛЕ */
-        .order-card {
-            background: #f8f9fa;
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-left: 3px solid #87CEFA;
-            font-size: 11px;
-        }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
-            }
-            .sidebar, .map-container {
-                width: 100%;
-            }
-            .driver-card {
-                margin-left: 0;
-                border-radius: 8px;
-                width: 100%;
-            }
-            .footer-content {
-                gap: 12px;
-                flex-direction: column;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -276,6 +14,7 @@
     
     <header class="header">
         <div class="user-status">
+            <button class="lang-btn" id="langBtn">English</button>
             <a href="#" onclick="showLoginModal()">Войти</a>
             <a href="#" onclick="showRegisterModal()">Регистрация</a>
         </div>
@@ -310,6 +49,11 @@
         </aside>
         
         <div class="map-container">
+            <div class="search-overlay">
+                <input type="text" id="searchAddressInput" placeholder="Поиск адреса">
+                <button id="searchAddressBtn">Найти</button>
+            </div>
+            <button class="geolocation-btn" id="geolocationBtn">📍</button>
             <div id="map"></div>
         </div>
         
@@ -325,7 +69,7 @@
     
 </div>
 
-<!-- Модалка заказа -->
+<!-- МОДАЛЬНЫЕ ОКНА -->
 <div id="orderModal" class="modal">
     <h3>Заказ такси</h3>
     <input type="text" id="orderName" placeholder="ФИО">
@@ -337,12 +81,11 @@
         <option value="Комфорт">Комфорт - 35 руб/км</option>
         <option value="Бизнес">Бизнес - 50 руб/км</option>
     </select>
-    <div id="pricePreview" style="margin: 8px 0; font-size: 12px; font-weight: bold; color: #87CEFA;"></div>
+    <div id="pricePreview"></div>
     <button id="submitOrderBtn">Заказать такси</button>
     <button onclick="closeOrderModal()" class="btn-secondary">Отмена</button>
 </div>
 
-<!-- Модалка комментария -->
 <div id="commentModal" class="modal">
     <h3>Комментарий водителю</h3>
     <textarea id="driverComment" rows="4" placeholder="Ваши пожелания..."></textarea>
@@ -350,19 +93,15 @@
     <button onclick="closeCommentModal()" class="btn-secondary">Отмена</button>
 </div>
 
-<!-- Модалка входа пользователя -->
 <div id="loginModal" class="modal">
     <h3>Вход пользователя</h3>
     <input type="email" id="loginEmail" placeholder="Email">
     <input type="password" id="loginPassword" placeholder="Пароль">
     <button id="doLoginBtn">Войти</button>
     <button onclick="closeLoginModal()" class="btn-secondary">Отмена</button>
-    <div style="text-align: center; margin-top: 10px; font-size: 11px;">
-        <a href="#" onclick="closeLoginModal(); showRegisterModal();">Нет аккаунта? Зарегистрироваться</a>
-    </div>
+    <div class="modal-link"><a href="#" onclick="closeLoginModal(); showRegisterModal();">Нет аккаунта? Зарегистрироваться</a></div>
 </div>
 
-<!-- Модалка регистрации -->
 <div id="registerModal" class="modal">
     <h3>Регистрация</h3>
     <input type="text" id="regName" placeholder="ФИО">
@@ -371,222 +110,20 @@
     <input type="password" id="regPassword" placeholder="Пароль">
     <button id="doRegisterBtn">Зарегистрироваться</button>
     <button onclick="closeRegisterModal()" class="btn-secondary">Отмена</button>
-    <div style="text-align: center; margin-top: 10px; font-size: 11px;">
-        <a href="#" onclick="closeRegisterModal(); showLoginModal();">Уже есть аккаунт? Войти</a>
-    </div>
+    <div class="modal-link"><a href="#" onclick="closeRegisterModal(); showLoginModal();">Уже есть аккаунт? Войти</a></div>
 </div>
 
-<!-- Модалка профиля пользователя -->
 <div id="profileModal" class="modal" style="width: 450px;">
     <h3>Мой профиль</h3>
-    <div id="profileInfo" style="margin-bottom: 15px;"></div>
+    <div id="profileInfo"></div>
     <div id="ordersHistory"></div>
-    <button onclick="logout()" style="background: #dc3545; margin-top: 15px;">Выйти</button>
+    <button onclick="logout()" class="logout-btn">Выйти</button>
     <button onclick="closeProfileModal()" class="btn-secondary">Закрыть</button>
 </div>
 
 <div id="overlay" class="overlay"></div>
 
-<script>
-    // ========== ПЕРЕМЕННЫЕ ==========
-    var map;
-    var userId = localStorage.getItem('userId');
-    var userName = localStorage.getItem('userName');
-    
-    // ========== КАРТА ==========
-    function initMap() {
-        if (typeof ymaps === 'undefined') { setTimeout(initMap, 500); return; }
-        ymaps.ready(function() {
-            map = new ymaps.Map('map', {
-                center: [55.751244, 37.618423],
-                zoom: 12,
-                controls: ['zoomControl', 'fullscreenControl']
-            });
-            map.events.add('click', function(e) {
-                var coords = e.get('coords');
-                document.getElementById('orderPickup').value = coords[0].toFixed(4) + ', ' + coords[1].toFixed(4);
-            });
-        });
-    }
-    initMap();
-    
-    // ========== ОБЩИЕ ФУНКЦИИ ==========
-    function showOverlay() { document.getElementById('overlay').style.display = 'block'; }
-    function hideOverlay() { document.getElementById('overlay').style.display = 'none'; }
-    
-    function openOrderModal() { document.getElementById('orderModal').style.display = 'block'; showOverlay(); }
-    function closeOrderModal() { document.getElementById('orderModal').style.display = 'none'; hideOverlay(); }
-    
-    function openCommentModal() { document.getElementById('commentModal').style.display = 'block'; showOverlay(); }
-    function closeCommentModal() { document.getElementById('commentModal').style.display = 'none'; hideOverlay(); }
-    
-    function showLoginModal() { document.getElementById('loginModal').style.display = 'block'; showOverlay(); }
-    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; hideOverlay(); }
-    
-    function showRegisterModal() { document.getElementById('registerModal').style.display = 'block'; showOverlay(); }
-    function closeRegisterModal() { document.getElementById('registerModal').style.display = 'none'; hideOverlay(); }
-    
-    function showProfileModal() { 
-        document.getElementById('profileModal').style.display = 'block'; 
-        showOverlay();
-        loadProfile();
-    }
-    function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; hideOverlay(); }
-    
-    function makePhoneCall() { window.location.href = 'tel:+78121234567'; }
-    
-    function calculatePrice() {
-        var pickup = document.getElementById('orderPickup').value;
-        var dropoff = document.getElementById('orderDropoff').value;
-        var tariff = document.getElementById('orderTariff').value;
-        if (pickup && dropoff) {
-            var pricePerKm = 25;
-            if (tariff === 'Комфорт') pricePerKm = 35;
-            if (tariff === 'Бизнес') pricePerKm = 50;
-            var price = 10 * pricePerKm;
-            document.getElementById('pricePreview').innerHTML = 'Примерная стоимость: ' + price + ' ₽';
-        }
-    }
-    
-    function sendComment() {
-        var comment = document.getElementById('driverComment').value;
-        if (comment) {
-            alert('Комментарий отправлен: ' + comment);
-            document.getElementById('driverComment').value = '';
-            closeCommentModal();
-        } else {
-            alert('Введите комментарий');
-        }
-    }
-    
-    function logout() {
-        localStorage.clear();
-        location.reload();
-    }
-    
-    // ========== ЗАКАЗ ==========
-    async function submitOrder() {
-        var name = document.getElementById('orderName').value;
-        var phone = document.getElementById('orderPhone').value;
-        var pickup = document.getElementById('orderPickup').value;
-        var dropoff = document.getElementById('orderDropoff').value;
-        var tariff = document.getElementById('orderTariff').value;
-        
-        if (!name || !phone || !pickup || !dropoff) {
-            alert('Заполните все поля');
-            return;
-        }
-        
-        var pricePerKm = 25;
-        if (tariff === 'Комфорт') pricePerKm = 35;
-        if (tariff === 'Бизнес') pricePerKm = 50;
-        var price = 10 * pricePerKm;
-        
-        var formData = new FormData();
-        formData.append('pickup', pickup);
-        formData.append('dropoff', dropoff);
-        formData.append('tariff', tariff);
-        formData.append('price', price);
-        
-        if (userId) {
-            formData.append('user_id', userId);
-        } else {
-            formData.append('guest_name', name);
-            formData.append('guest_phone', phone);
-            formData.append('guest_email', '');
-        }
-        
-        await fetch('/save-order', { method: 'POST', body: formData });
-        alert('Заказ оформлен!\nОткуда: ' + pickup + '\nКуда: ' + dropoff + '\nСтоимость: ' + price + ' ₽');
-        closeOrderModal();
-        document.getElementById('orderName').value = '';
-        document.getElementById('orderPhone').value = '';
-        document.getElementById('orderPickup').value = '';
-        document.getElementById('orderDropoff').value = '';
-    }
-    
-    // ========== РЕГИСТРАЦИЯ ==========
-    async function register() {
-        var formData = new FormData();
-        formData.append('fullname', document.getElementById('regName').value);
-        formData.append('phone', document.getElementById('regPhone').value);
-        formData.append('email', document.getElementById('regEmail').value);
-        formData.append('password', document.getElementById('regPassword').value);
-        
-        var response = await fetch('/register', { method: 'POST', body: formData });
-        var result = await response.json();
-        if (result.success) {
-            alert('Регистрация успешна! Теперь войдите.');
-            closeRegisterModal();
-            showLoginModal();
-        } else {
-            alert(result.error || 'Ошибка регистрации');
-        }
-    }
-    
-    // ========== ВХОД ПОЛЬЗОВАТЕЛЯ ==========
-    async function login() {
-        var formData = new FormData();
-        formData.append('email', document.getElementById('loginEmail').value);
-        formData.append('password', document.getElementById('loginPassword').value);
-        
-        var response = await fetch('/login-user', { method: 'POST', body: formData });
-        var result = await response.json();
-        if (result.success) {
-            localStorage.setItem('userId', result.user_id);
-            localStorage.setItem('userName', result.fullname);
-            alert('Добро пожаловать, ' + result.fullname + '!');
-            location.reload();
-        } else {
-            alert(result.error);
-        }
-    }
-    
-    // ========== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ==========
-    async function loadProfile() {
-        var id = localStorage.getItem('userId');
-        if (!id) return;
-        var response = await fetch('/user-orders/' + id);
-        var orders = await response.json();
-        document.getElementById('profileInfo').innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p><hr>';
-        var html = '<h4 style="margin: 10px 0;">История заказов</h4>';
-        if (orders.length === 0) {
-            html += '<p>У вас пока нет заказов</p>';
-        } else {
-            orders.forEach(function(order) {
-                html += '<div class="order-card"><strong>' + order.pickup + '</strong> → <strong>' + order.dropoff + '</strong><br>' +
-                        'Тариф: ' + order.tariff + ' | Цена: ' + order.price + ' ₽<br>' +
-                        'Статус: ' + order.status + '<br>' +
-                        '<small>' + new Date(order.date).toLocaleString() + '</small></div>';
-            });
-        }
-        document.getElementById('ordersHistory').innerHTML = html;
-    }
-    
-    // ========== НАЗНАЧЕНИЕ КНОПОК ==========
-    document.getElementById('orderBtn').onclick = openOrderModal;
-    document.getElementById('phoneOrderBtn').onclick = makePhoneCall;
-    document.getElementById('commentBtn').onclick = openCommentModal;
-    document.getElementById('driverLoginBtn').onclick = function() { window.location.href = '/login'; };
-    document.getElementById('submitOrderBtn').onclick = submitOrder;
-    document.getElementById('sendCommentBtn').onclick = sendComment;
-    document.getElementById('doLoginBtn').onclick = login;
-    document.getElementById('doRegisterBtn').onclick = register;
-    
-    document.getElementById('orderPickup').addEventListener('input', calculatePrice);
-    document.getElementById('orderDropoff').addEventListener('input', calculatePrice);
-    document.getElementById('orderTariff').addEventListener('change', calculatePrice);
-    
-    if (userId) {
-        document.getElementById('userStatus').innerHTML = '<a href="#" onclick="showProfileModal()">' + userName + '</a> <a href="#" onclick="logout()">Выйти</a>';
-    }
-    
-    window.closeOrderModal = closeOrderModal;
-    window.closeCommentModal = closeCommentModal;
-    window.closeLoginModal = closeLoginModal;
-    window.closeRegisterModal = closeRegisterModal;
-    window.closeProfileModal = closeProfileModal;
-</script>
+<script src="/static/script.js"></script>
 
 </body>
 </html>
