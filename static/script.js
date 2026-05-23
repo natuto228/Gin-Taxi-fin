@@ -5,7 +5,7 @@ let simulationInterval = null;
 
 function initMap() {
     if (typeof ymaps === 'undefined') {
-        console.log('Яндекс.Карты не загружены, повтор через 0.5 сек');
+        console.log('Ждём загрузку Яндекс.Карт...');
         setTimeout(initMap, 500);
         return;
     }
@@ -188,44 +188,12 @@ function toggleLanguage() {
     const isRu = document.documentElement.lang === 'ru';
     document.documentElement.lang = isRu ? 'en' : 'ru';
     
-    const translations = {
-        'Заказ по телефону': 'Phone order',
-        'Выбрать тариф': 'Choose tariff',
-        'Комментарий водителю': 'Comment to driver',
-        'Войти в профиль': 'Login',
-        'Работа в такси': 'Work as taxi',
-        'Заказать такси': 'Order taxi',
-        'Отмена': 'Cancel',
-        'Отправить': 'Send',
-        'Войти': 'Login',
-        'English': 'Russian',
-        'Поиск адреса': 'Search address',
-        'Найти': 'Find',
-        'ФИО': 'Full name',
-        'Телефон': 'Phone',
-        'Адрес подачи': 'Pickup address',
-        'Адрес назначения': 'Dropoff address',
-        'Эконом - 25 руб/км': 'Econom - 25 RUB/km',
-        'Комфорт - 35 руб/км': 'Comfort - 35 RUB/km',
-        'Бизнес - 50 руб/км': 'Business - 50 RUB/km',
-        'Примерная стоимость': 'Estimated price'
-    };
-    
-    for (const [ru, en] of Object.entries(translations)) {
-        const elements = document.querySelectorAll('*');
-        elements.forEach(el => {
-            if (el.innerText === ru && isRu) {
-                el.innerText = en;
-            } else if (el.innerText === en && !isRu) {
-                el.innerText = ru;
-            }
-        });
-    }
-    
     const langBtn = document.getElementById('langBtn');
     if (langBtn) {
         langBtn.innerText = isRu ? 'Russian' : 'English';
     }
+    
+    alert(isRu ? 'Language switched to English' : 'Язык переключен на русский');
 }
 
 function initCarSimulation() {
@@ -264,14 +232,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname === '/') {
         initMap();
         
-        document.getElementById('searchBtn')?.addEventListener('click', searchAddress);
-        document.getElementById('myLocationBtn')?.addEventListener('click', setCurrentLocation);
-        document.getElementById('orderBtn')?.addEventListener('click', openOrderForm);
-        document.getElementById('phoneOrderBtn')?.addEventListener('click', makePhoneCall);
-        document.getElementById('commentBtn')?.addEventListener('click', openCommentModal);
-        document.getElementById('driverLoginBtn')?.addEventListener('click', () => window.location.href = '/login');
-        
+        const searchBtn = document.getElementById('searchBtn');
+        const myLocationBtn = document.getElementById('myLocationBtn');
+        const orderBtn = document.getElementById('orderBtn');
+        const phoneOrderBtn = document.getElementById('phoneOrderBtn');
+        const commentBtn = document.getElementById('commentBtn');
+        const driverLoginBtn = document.getElementById('driverLoginBtn');
         const langBtn = document.getElementById('langBtn');
+        
+        if (searchBtn) searchBtn.addEventListener('click', searchAddress);
+        if (myLocationBtn) myLocationBtn.addEventListener('click', setCurrentLocation);
+        if (orderBtn) orderBtn.addEventListener('click', openOrderForm);
+        if (phoneOrderBtn) phoneOrderBtn.addEventListener('click', makePhoneCall);
+        if (commentBtn) commentBtn.addEventListener('click', openCommentModal);
+        if (driverLoginBtn) driverLoginBtn.addEventListener('click', () => window.location.href = '/login');
         if (langBtn) langBtn.addEventListener('click', toggleLanguage);
         
         const pickupInput = document.getElementById('orderPickup');
@@ -284,6 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ===== ВХОД ВОДИТЕЛЯ =====
 if (window.location.pathname === '/login') {
     const form = document.getElementById('driverLoginForm');
     if (form) {
@@ -301,81 +276,87 @@ if (window.location.pathname === '/login') {
     }
 }
 
+// ===== КАБИНЕТ ВОДИТЕЛЯ =====
 if (window.location.pathname === '/driver-dashboard') {
     if (!localStorage.getItem('driver')) window.location.href = '/login';
-    loadDriverOrders();
-    loadDriverHistory();
-}
-
-async function loadDriverOrders() {
-    const response = await fetch('/user-orders/all');
-    const orders = await response.json();
-    const container = document.getElementById('ordersList');
     
-    if (!orders.length) {
-        container.innerHTML = '<div class="alert alert-info">Нет новых заказов</div>';
-        return;
-    }
-    
-    container.innerHTML = orders.map(order => `
-        <div class="card mb-2">
-            <div class="card-body">
-                <div>${order.pickup} → ${order.dropoff}</div>
-                <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
-                <div class="mt-2">
-                    <button class="btn btn-sm btn-warning" onclick="updateStatus(${order.id}, 'Еду к пассажиру')">Еду к пассажиру</button>
-                    <button class="btn btn-sm btn-info" onclick="updateStatus(${order.id}, 'Пассажир в машине')">Пассажир в машине</button>
-                    <button class="btn btn-sm btn-success" onclick="updateStatus(${order.id}, 'Завершена')">Завершить</button>
-                    <button class="btn btn-sm btn-primary" onclick="acceptOrder(${order.id})">Принять</button>
+    async function loadDriverOrders() {
+        const response = await fetch('/user-orders/all');
+        const orders = await response.json();
+        const container = document.getElementById('ordersList');
+        
+        if (!orders.length) {
+            container.innerHTML = '<div class="alert alert-info">Нет новых заказов</div>';
+            return;
+        }
+        
+        container.innerHTML = orders.map(order => `
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div>${order.pickup} → ${order.dropoff}</div>
+                    <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-warning" onclick="updateStatus(${order.id}, 'Еду к пассажиру')">Еду к пассажиру</button>
+                        <button class="btn btn-sm btn-info" onclick="updateStatus(${order.id}, 'Пассажир в машине')">Пассажир в машине</button>
+                        <button class="btn btn-sm btn-success" onclick="updateStatus(${order.id}, 'Завершена')">Завершить</button>
+                        <button class="btn btn-sm btn-primary" onclick="acceptOrder(${order.id})">Принять</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
-}
-
-async function loadDriverHistory() {
-    const driverId = localStorage.getItem('driverId');
-    const response = await fetch(`/driver-orders/${driverId}`);
-    const orders = await response.json();
-    const container = document.getElementById('historyList');
-    
-    if (!orders.length) {
-        container.innerHTML = '<div class="alert alert-info">Нет выполненных заказов</div>';
-        return;
+        `).join('');
     }
     
-    container.innerHTML = orders.map(order => `
-        <div class="card mb-2">
-            <div class="card-body">
-                <div>${order.pickup_address} → ${order.dropoff_address}</div>
-                <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
-                <div>Статус: ${order.status}</div>
-                <div>Дата: ${order.created_at}</div>
+    async function loadDriverHistory() {
+        const driverId = localStorage.getItem('driverId');
+        const response = await fetch(`/driver-orders/${driverId}`);
+        const orders = await response.json();
+        const container = document.getElementById('historyList');
+        
+        if (!orders.length) {
+            container.innerHTML = '<div class="alert alert-info">Нет выполненных заказов</div>';
+            return;
+        }
+        
+        container.innerHTML = orders.map(order => `
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div>${order.pickup_address} → ${order.dropoff_address}</div>
+                    <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
+                    <div>Статус: ${order.status}</div>
+                    <div>Дата: ${order.created_at}</div>
+                </div>
             </div>
-        </div>
-    `).join('');
-}
-
-async function acceptOrder(orderId) {
-    const driverId = localStorage.getItem('driverId');
-    const formData = new FormData();
-    formData.append('driver_id', driverId);
+        `).join('');
+    }
     
-    await fetch(`/assign-order/${orderId}`, { method: 'POST', body: formData });
-    alert(`Заказ ${orderId} принят`);
+    async function acceptOrder(orderId) {
+        const driverId = localStorage.getItem('driverId');
+        const formData = new FormData();
+        formData.append('driver_id', driverId);
+        
+        await fetch(`/assign-order/${orderId}`, { method: 'POST', body: formData });
+        alert(`Заказ ${orderId} принят`);
+        loadDriverOrders();
+        loadDriverHistory();
+    }
+    
+    async function updateStatus(orderId, status) {
+        const formData = new FormData();
+        formData.append('status', status);
+        await fetch(`/update-order-status/${orderId}`, { method: 'POST', body: formData });
+        alert(`Статус изменён на "${status}"`);
+        loadDriverOrders();
+        loadDriverHistory();
+    }
+    
+    window.acceptOrder = acceptOrder;
+    window.updateStatus = updateStatus;
+    
     loadDriverOrders();
     loadDriverHistory();
 }
 
-async function updateStatus(orderId, status) {
-    const formData = new FormData();
-    formData.append('status', status);
-    await fetch(`/update-order-status/${orderId}`, { method: 'POST', body: formData });
-    alert(`Статус изменён на "${status}"`);
-    loadDriverOrders();
-    loadDriverHistory();
-}
-
+// ===== ВХОД ПОЛЬЗОВАТЕЛЯ =====
 if (window.location.pathname === '/login-user') {
     const form = document.getElementById('loginUserForm');
     if (form) {
@@ -401,6 +382,7 @@ if (window.location.pathname === '/login-user') {
     }
 }
 
+// ===== РЕГИСТРАЦИЯ =====
 if (window.location.pathname === '/register') {
     const form = document.getElementById('registerForm');
     if (form) {
@@ -426,6 +408,7 @@ if (window.location.pathname === '/register') {
     }
 }
 
+// ===== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ =====
 if (window.location.pathname === '/user-profile') {
     const userId = localStorage.getItem('userId');
     const userName = localStorage.getItem('userName');
@@ -433,8 +416,6 @@ if (window.location.pathname === '/user-profile') {
     if (!userId) window.location.href = '/login-user';
     
     document.getElementById('userFullname').innerText = userName;
-    
-    loadUserOrders();
     
     async function loadUserOrders() {
         const response = await fetch(`/user-orders/${userId}`);
@@ -460,12 +441,15 @@ if (window.location.pathname === '/user-profile') {
         document.getElementById('totalOrders').innerText = orders.length;
     }
     
+    loadUserOrders();
+    
     document.getElementById('logoutUserBtn').onclick = () => {
         localStorage.clear();
         window.location.href = '/';
     };
 }
 
+// ===== АНКЕТА =====
 if (window.location.pathname === '/application') {
     const form = document.getElementById('applicationForm');
     if (form) {
@@ -485,6 +469,7 @@ if (window.location.pathname === '/application') {
     }
 }
 
+// ===== ДЕТАЛИ ЗАКАЗА =====
 if (window.location.pathname.includes('/order/')) {
     const statusSpan = document.getElementById('status');
     if (statusSpan && statusSpan.innerText === 'Завершена') {
@@ -516,6 +501,7 @@ if (window.location.pathname.includes('/order/')) {
     }
 }
 
+// ===== АДМИН-ПАНЕЛЬ =====
 if (window.location.pathname === '/admin') {
     let drivers = [];
     
