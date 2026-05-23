@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from datetime import datetime
-import sqlite3
 import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 app = FastAPI(title="Gin Taxi")
 
@@ -12,13 +13,19 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
+# Подключение к PostgreSQL
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+def get_db():
+    return psycopg2.connect(DATABASE_URL)
+
 def init_database():
-    conn = sqlite3.connect(os.path.join(BASE_DIR, 'database.db'))
+    conn = get_db()
     cursor = conn.cursor()
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             fullname TEXT,
             phone TEXT,
             email TEXT UNIQUE,
@@ -29,7 +36,7 @@ def init_database():
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS orders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             user_id INTEGER,
             guest_name TEXT,
             guest_phone TEXT,
@@ -45,7 +52,7 @@ def init_database():
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS applications (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             fullname TEXT,
             phone TEXT,
             email TEXT,
@@ -54,14 +61,16 @@ def init_database():
         )
     ''')
     
-    cursor.execute('SELECT * FROM users WHERE email = ?', ('user@gin.ru',))
+    # Создаём тестового пользователя
+    cursor.execute('SELECT * FROM users WHERE email = %s', ('user@gin.ru',))
     if not cursor.fetchone():
         cursor.execute('''
             INSERT INTO users (fullname, phone, email, password, created_at)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         ''', ('Тестовый Пользователь', '+79991234567', 'user@gin.ru', '123456', datetime.now()))
     
     conn.commit()
+    cursor.close()
     conn.close()
 
 init_database()
@@ -81,16 +90,19 @@ async def register(
     email: str = Form(...),
     password: str = Form(...)
 ):
-    conn = sqlite3.connect(os.path.join(BASE_DIR, 'database.db'))
+    conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute('INSERT INTO users (fullname, phone, email, password, created_at) VALUES (?, ?, ?, ?, ?)',
-                       (fullname, phone, email, password, datetime.now()))
+        cursor.execute('''
+            INSERT INTO users (fullname, phone, email, password, created_at)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', (fullname, phone, email, password, datetime.now()))
         conn.commit()
         return {"success": True}
-    except sqlite3.IntegrityError:
+    except Exception:
         return {"success": False, "error": "Email уже существует"}
     finally:
+        cursor.close()
         conn.close()
 
 @app.get("/login-user", response_class=HTMLResponse)
@@ -99,13 +111,14 @@ async def login_user_page(request: Request):
 
 @app.post("/login-user")
 async def login_user(email: str = Form(...), password: str = Form(...)):
-    conn = sqlite3.connect(os.path.join(BASE_DIR, 'database.db'))
-    cursor = conn.cursor()
-    cursor.execute('SELECT id, fullname, phone, email FROM users WHERE email = ? AND password = ?', (email, password))
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute('SELECT id, fullname, phone, email FROM users WHERE email = %s AND password = %s', (email, password))
     user = cursor.fetchone()
+    cursor.close()
     conn.close()
     if user:
-        return {"success": True, "user_id": user[0], "fullname": user[1], "phone": user[2], "email": user[3]}
+        return {"success": True, "user_id": user['id'], "fullname": user['fullname'], "phone": user['phone'], "email": user['email']}
     return {"success": False, "error": "Неверный email или пароль"}
 
 @app.get("/user-profile", response_class=HTMLResponse)
@@ -123,47 +136,50 @@ async def save_order(
     tariff: str = Form(...),
     price: float = Form(...)
 ):
-    conn = sqlite3.connect(os.path.join(BASE_DIR, 'database.db'))
+    conn = get_db()
     cursor = conn.cursor()
     
     if user_id:
         cursor.execute('''
             INSERT INTO orders (user_id, pickup_address, dropoff_address, tariff, price, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
         ''', (user_id, pickup, dropoff, tariff, price, 'Новый', datetime.now()))
     else:
         cursor.execute('''
             INSERT INTO orders (guest_name, guest_phone, guest_email, pickup_address, dropoff_address, tariff, price, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         ''', (guest_name, guest_phone, guest_email, pickup, dropoff, tariff, price, 'Новый', datetime.now()))
     
     conn.commit()
+    cursor.close()
     conn.close()
     return {"success": True}
 
 @app.get("/user-orders/{user_id}")
 async def get_user_orders(user_id: int):
-    conn = sqlite3.connect(os.path.join(BASE_DIR, 'database.db'))
-    cursor = conn.cursor()
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute('''
         SELECT id, pickup_address, dropoff_address, tariff, price, status, created_at
-        FROM orders WHERE user_id = ? ORDER BY created_at DESC
+        FROM orders WHERE user_id = %s ORDER BY created_at DESC
     ''', (user_id,))
     orders = cursor.fetchall()
+    cursor.close()
     conn.close()
-    return [{"id": o[0], "pickup": o[1], "dropoff": o[2], "tariff": o[3], "price": o[4], "status": o[5], "date": o[6]} for o in orders]
+    return [{"id": o['id'], "pickup": o['pickup_address'], "dropoff": o['dropoff_address'], "tariff": o['tariff'], "price": o['price'], "status": o['status'], "date": o['created_at']} for o in orders]
 
 @app.get("/user-orders/all")
 async def get_all_orders():
-    conn = sqlite3.connect(os.path.join(BASE_DIR, 'database.db'))
-    cursor = conn.cursor()
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute('''
         SELECT id, pickup_address, dropoff_address, tariff, price, status
         FROM orders WHERE status = 'Новый' ORDER BY created_at DESC
     ''')
     orders = cursor.fetchall()
+    cursor.close()
     conn.close()
-    return [{"id": o[0], "pickup": o[1], "dropoff": o[2], "tariff": o[3], "price": o[4], "status": o[5]} for o in orders]
+    return [{"id": o['id'], "pickup": o['pickup_address'], "dropoff": o['dropoff_address'], "tariff": o['tariff'], "price": o['price'], "status": o['status']} for o in orders]
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_driver_page(request: Request):
@@ -184,11 +200,14 @@ async def save_application(
     email: str = Form(...),
     role: str = Form(...)
 ):
-    conn = sqlite3.connect(os.path.join(BASE_DIR, 'database.db'))
+    conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO applications (fullname, phone, email, role, created_at) VALUES (?, ?, ?, ?, ?)',
-                   (fullname, phone, email, role, datetime.now()))
+    cursor.execute('''
+        INSERT INTO applications (fullname, phone, email, role, created_at)
+        VALUES (%s, %s, %s, %s, %s)
+    ''', (fullname, phone, email, role, datetime.now()))
     conn.commit()
+    cursor.close()
     conn.close()
     return {"success": True}
 
