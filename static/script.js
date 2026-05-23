@@ -56,14 +56,14 @@ function searchAddress() {
                 userMarker = L.marker([lat, lon]).addTo(map);
                 document.getElementById('orderPickup').value = query;
             } else {
-                alert('Address not found');
+                alert('Адрес не найден');
             }
         });
 }
 
 function setCurrentLocation() {
     if (!navigator.geolocation) {
-        alert('Geolocation not supported');
+        alert('Геолокация не поддерживается');
         return;
     }
     
@@ -78,7 +78,7 @@ function setCurrentLocation() {
         const address = await getAddressFromCoords(lat, lng);
         document.getElementById('orderPickup').value = address;
     }, function() {
-        alert('Could not get location');
+        alert('Не удалось определить местоположение');
     });
 }
 
@@ -121,7 +121,7 @@ function calculatePrice() {
     const distance = 10;
     const price = distance * pricePerKm;
     
-    if (priceDiv) priceDiv.innerHTML = `Estimated price: ${price} RUB`;
+    if (priceDiv) priceDiv.innerHTML = `Примерная стоимость: ${price} ₽`;
 }
 
 async function submitOrder() {
@@ -132,7 +132,7 @@ async function submitOrder() {
     const tariff = document.getElementById('orderTariff').value;
     
     if (!name || !phone || !pickup || !dropoff) {
-        alert('Fill all fields');
+        alert('Заполните все поля');
         return;
     }
     
@@ -157,7 +157,7 @@ async function submitOrder() {
     }
     
     await fetch('/save-order', { method: 'POST', body: formData });
-    alert(`Order confirmed!\nFrom: ${pickup}\nTo: ${dropoff}\nPrice: ${price} RUB`);
+    alert(`Заказ оформлен!\nОткуда: ${pickup}\nКуда: ${dropoff}\nСтоимость: ${price} ₽`);
     closeOrderModal();
     
     document.getElementById('orderName').value = '';
@@ -169,11 +169,11 @@ async function submitOrder() {
 function sendComment() {
     const comment = document.getElementById('driverComment').value;
     if (comment) {
-        alert('Comment sent');
+        alert('Комментарий отправлен');
         document.getElementById('driverComment').value = '';
         closeCommentModal();
     } else {
-        alert('Enter comment');
+        alert('Введите комментарий');
     }
 }
 
@@ -216,12 +216,23 @@ document.addEventListener('DOMContentLoaded', function() {
         initMap();
         startSimulation();
         
-        document.getElementById('searchBtn')?.addEventListener('click', searchAddress);
-        document.getElementById('myLocationBtn')?.addEventListener('click', setCurrentLocation);
-        document.getElementById('orderBtn')?.addEventListener('click', openOrderForm);
-        document.getElementById('phoneOrderBtn')?.addEventListener('click', makePhoneCall);
-        document.getElementById('commentBtn')?.addEventListener('click', openCommentModal);
-        document.getElementById('driverLoginBtn')?.addEventListener('click', () => window.location.href = '/login');
+        const searchBtn = document.getElementById('searchBtn');
+        const myLocationBtn = document.getElementById('myLocationBtn');
+        const orderBtn = document.getElementById('orderBtn');
+        const phoneOrderBtn = document.getElementById('phoneOrderBtn');
+        const commentBtn = document.getElementById('commentBtn');
+        const driverLoginBtn = document.getElementById('driverLoginBtn');
+        const submitOrderBtn = document.getElementById('submitOrderBtn');
+        const sendCommentBtn = document.getElementById('sendCommentBtn');
+        
+        if (searchBtn) searchBtn.addEventListener('click', searchAddress);
+        if (myLocationBtn) myLocationBtn.addEventListener('click', setCurrentLocation);
+        if (orderBtn) orderBtn.addEventListener('click', openOrderForm);
+        if (phoneOrderBtn) phoneOrderBtn.addEventListener('click', makePhoneCall);
+        if (commentBtn) commentBtn.addEventListener('click', openCommentModal);
+        if (driverLoginBtn) driverLoginBtn.addEventListener('click', () => window.location.href = '/login');
+        if (submitOrderBtn) submitOrderBtn.addEventListener('click', submitOrder);
+        if (sendCommentBtn) sendCommentBtn.addEventListener('click', sendComment);
         
         const pickupInput = document.getElementById('orderPickup');
         const dropoffInput = document.getElementById('orderDropoff');
@@ -234,12 +245,15 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 if (window.location.pathname === '/login') {
-    document.getElementById('driverLoginForm')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        localStorage.setItem('driver', 'true');
-        localStorage.setItem('driverId', '2');
-        window.location.href = '/driver-dashboard';
-    });
+    const form = document.getElementById('driverLoginForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            localStorage.setItem('driver', 'true');
+            localStorage.setItem('driverId', '2');
+            window.location.href = '/driver-dashboard';
+        });
+    }
 }
 
 if (window.location.pathname === '/driver-dashboard') {
@@ -254,7 +268,7 @@ async function loadDriverOrders() {
     const container = document.getElementById('ordersList');
     
     if (!orders.length) {
-        container.innerHTML = '<div class="alert alert-info">No new orders</div>';
+        container.innerHTML = '<div class="alert alert-info">Нет новых заказов</div>';
         return;
     }
     
@@ -262,12 +276,12 @@ async function loadDriverOrders() {
         <div class="card mb-2">
             <div class="card-body">
                 <div>${order.pickup} → ${order.dropoff}</div>
-                <div>Tariff: ${order.tariff} | Price: ${order.price} RUB</div>
+                <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
                 <div class="mt-2">
-                    <button class="btn btn-sm btn-warning" onclick="updateStatus(${order.id}, 'Driving to passenger')">Driving to passenger</button>
-                    <button class="btn btn-sm btn-info" onclick="updateStatus(${order.id}, 'Passenger in car')">Passenger in car</button>
-                    <button class="btn btn-sm btn-success" onclick="updateStatus(${order.id}, 'Completed')">Complete</button>
-                    <button class="btn btn-sm btn-primary" onclick="acceptOrder(${order.id})">Accept</button>
+                    <button class="btn btn-sm btn-warning" onclick="updateStatus(${order.id}, 'Еду к пассажиру')">Еду к пассажиру</button>
+                    <button class="btn btn-sm btn-info" onclick="updateStatus(${order.id}, 'Пассажир в машине')">Пассажир в машине</button>
+                    <button class="btn btn-sm btn-success" onclick="updateStatus(${order.id}, 'Завершена')">Завершить</button>
+                    <button class="btn btn-sm btn-primary" onclick="acceptOrder(${order.id})">Принять</button>
                 </div>
             </div>
         </div>
@@ -281,7 +295,7 @@ async function loadDriverHistory() {
     const container = document.getElementById('historyList');
     
     if (!orders.length) {
-        container.innerHTML = '<div class="alert alert-info">No completed orders</div>';
+        container.innerHTML = '<div class="alert alert-info">Нет выполненных заказов</div>';
         return;
     }
     
@@ -289,9 +303,9 @@ async function loadDriverHistory() {
         <div class="card mb-2">
             <div class="card-body">
                 <div>${order.pickup_address} → ${order.dropoff_address}</div>
-                <div>Tariff: ${order.tariff} | Price: ${order.price} RUB</div>
-                <div>Status: ${order.status}</div>
-                <div>Date: ${order.created_at}</div>
+                <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
+                <div>Статус: ${order.status}</div>
+                <div>Дата: ${order.created_at}</div>
             </div>
         </div>
     `).join('');
@@ -303,7 +317,7 @@ async function acceptOrder(orderId) {
     formData.append('driver_id', driverId);
     
     await fetch(`/assign-order/${orderId}`, { method: 'POST', body: formData });
-    alert(`Order ${orderId} accepted`);
+    alert(`Заказ ${orderId} принят`);
     loadDriverOrders();
     loadDriverHistory();
 }
@@ -312,53 +326,59 @@ async function updateStatus(orderId, status) {
     const formData = new FormData();
     formData.append('status', status);
     await fetch(`/update-order-status/${orderId}`, { method: 'POST', body: formData });
-    alert(`Status changed to "${status}"`);
+    alert(`Статус изменён на "${status}"`);
     loadDriverOrders();
     loadDriverHistory();
 }
 
 if (window.location.pathname === '/login-user') {
-    document.getElementById('loginUserForm')?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData();
-        formData.append('email', document.getElementById('email').value);
-        formData.append('password', document.getElementById('password').value);
-        
-        const response = await fetch('/login-user', { method: 'POST', body: formData });
-        const result = await response.json();
-        
-        if (result.success) {
-            localStorage.setItem('userId', result.user_id);
-            localStorage.setItem('userName', result.fullname);
-            alert(`Welcome, ${result.fullname}!`);
-            window.location.href = '/user-profile';
-        } else {
-            alert(result.error);
-        }
-    });
+    const form = document.getElementById('loginUserForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('email', document.getElementById('email').value);
+            formData.append('password', document.getElementById('password').value);
+            
+            const response = await fetch('/login-user', { method: 'POST', body: formData });
+            const result = await response.json();
+            
+            if (result.success) {
+                localStorage.setItem('userId', result.user_id);
+                localStorage.setItem('userName', result.fullname);
+                alert(`Добро пожаловать, ${result.fullname}!`);
+                window.location.href = '/user-profile';
+            } else {
+                alert(result.error);
+            }
+        });
+    }
 }
 
 if (window.location.pathname === '/register') {
-    document.getElementById('registerForm')?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData();
-        formData.append('fullname', document.getElementById('fullname').value);
-        formData.append('phone', document.getElementById('phone').value);
-        formData.append('email', document.getElementById('email').value);
-        formData.append('password', document.getElementById('password').value);
-        
-        const response = await fetch('/register', { method: 'POST', body: formData });
-        const result = await response.json();
-        
-        if (result.success) {
-            alert('Registration successful. Please login.');
-            window.location.href = '/login-user';
-        } else {
-            alert(result.error || 'Registration error');
-        }
-    });
+    const form = document.getElementById('registerForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('fullname', document.getElementById('fullname').value);
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('password', document.getElementById('password').value);
+            
+            const response = await fetch('/register', { method: 'POST', body: formData });
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Регистрация успешна. Теперь войдите.');
+                window.location.href = '/login-user';
+            } else {
+                alert(result.error || 'Ошибка регистрации');
+            }
+        });
+    }
 }
 
 if (window.location.pathname === '/user-profile') {
@@ -377,7 +397,7 @@ if (window.location.pathname === '/user-profile') {
         const container = document.getElementById('ordersHistory');
         
         if (!orders.length) {
-            container.innerHTML = '<div class="alert alert-info">No orders yet</div>';
+            container.innerHTML = '<div class="alert alert-info">У вас пока нет заказов</div>';
             return;
         }
         
@@ -386,9 +406,9 @@ if (window.location.pathname === '/user-profile') {
                 <div class="card-body">
                     <div>${order.date}</div>
                     <div>${order.pickup} → ${order.dropoff}</div>
-                    <div>${order.tariff} | ${order.price} RUB</div>
-                    <div>Status: ${order.status}</div>
-                    <a href="/order/${order.id}" class="btn btn-sm btn-info mt-2">Details</a>
+                    <div>${order.tariff} | ${order.price} ₽</div>
+                    <div>Статус: ${order.status}</div>
+                    <a href="/order/${order.id}" class="btn btn-sm btn-info mt-2">Детали</a>
                 </div>
             </div>
         `).join('');
@@ -402,26 +422,95 @@ if (window.location.pathname === '/user-profile') {
 }
 
 if (window.location.pathname === '/application') {
-    document.getElementById('applicationForm')?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData();
-        formData.append('fullname', document.getElementById('appFullname').value);
-        formData.append('phone', document.getElementById('appPhone').value);
-        formData.append('email', document.getElementById('appEmail').value);
-        formData.append('role', document.getElementById('appRole').value);
-        
-        await fetch('/save-application', { method: 'POST', body: formData });
-        alert('Thank you! We will contact you.');
-        window.location.href = '/login';
-    });
-}
-
-if (window.location.pathname === '/order') {
-    const stars = document.querySelectorAll('.stars');
-    if (stars.length) {
-        stars.forEach(star => {
-            star.addEventListener('click', () => alert('Rating saved'));
+    const form = document.getElementById('applicationForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('fullname', document.getElementById('appFullname').value);
+            formData.append('phone', document.getElementById('appPhone').value);
+            formData.append('email', document.getElementById('appEmail').value);
+            formData.append('role', document.getElementById('appRole').value);
+            
+            await fetch('/save-application', { method: 'POST', body: formData });
+            alert('Спасибо! Мы свяжемся с вами.');
+            window.location.href = '/login';
         });
     }
 }
+
+if (window.location.pathname.includes('/order/')) {
+    const statusSpan = document.getElementById('status');
+    if (statusSpan && statusSpan.innerText === 'Завершена') {
+        const ratingBlock = document.getElementById('ratingBlock');
+        if (ratingBlock) ratingBlock.style.display = 'block';
+    }
+    
+    const stars = document.querySelectorAll('.stars span');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = this.getAttribute('data-rating');
+            alert('Оценка: ' + rating + ' звёзд');
+        });
+    });
+    
+    const submitReviewBtn = document.getElementById('submitReviewBtn');
+    if (submitReviewBtn) {
+        submitReviewBtn.addEventListener('click', function() {
+            const review = document.getElementById('review').value;
+            alert(review ? 'Спасибо за отзыв: ' + review : 'Спасибо за оценку!');
+        });
+    }
+    
+    const simulatePaymentBtn = document.getElementById('simulatePaymentBtn');
+    if (simulatePaymentBtn) {
+        simulatePaymentBtn.addEventListener('click', function() {
+            alert('Оплата прошла успешно (тестовый режим)');
+        });
+    }
+}
+
+if (window.location.pathname === '/admin') {
+    let drivers = [];
+    
+    fetch('/api/all-drivers').then(r => r.json()).then(data => {
+        drivers = data;
+        document.getElementById('driversList').innerHTML = drivers.map(d => 
+            `<div class="card mb-2 p-2">${d.fullname} (${d.phone})</div>`
+        ).join('');
+        
+        fetch('/api/all-orders').then(r => r.json()).then(data => {
+            document.getElementById('ordersList').innerHTML = data.map(o => `
+                <div class="card mb-2 p-2">
+                    Заказ ${o.id}: ${o.pickup_address} → ${o.dropoff_address} (${o.status})
+                    <select id="driver_${o.id}" class="form-select mt-2">
+                        <option value="">Выберите водителя</option>
+                        ${drivers.map(d => `<option value="${d.id}">${d.fullname}</option>`).join('')}
+                    </select>
+                    <button class="btn btn-sm btn-primary mt-2" onclick="assignOrder(${o.id})">Назначить</button>
+                </div>
+            `).join('');
+        });
+    });
+    
+    window.assignOrder = function(orderId) {
+        const driverId = document.getElementById(`driver_${orderId}`).value;
+        if (!driverId) return alert('Выберите водителя');
+        const formData = new FormData();
+        formData.append('order_id', orderId);
+        formData.append('driver_id', driverId);
+        fetch('/api/assign-order', { method: 'POST', body: formData }).then(() => {
+            alert('Назначено');
+            location.reload();
+        });
+    };
+}
+
+// ===== ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ HTML (onclick) =====
+window.closeOrderModal = closeOrderModal;
+window.closeCommentModal = closeCommentModal;
+window.toggleLanguage = toggleLanguage;
+window.acceptOrder = acceptOrder;
+window.updateStatus = updateStatus;
+window.assignOrder = window.assignOrder;
