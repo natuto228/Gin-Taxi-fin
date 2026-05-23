@@ -17,7 +17,6 @@ body {
     min-height: 100vh;
 }
 
-/* ===== ШАПКА ===== */
 .header {
     background: white;
     padding: 15px 30px;
@@ -25,6 +24,7 @@ body {
     justify-content: flex-end;
     align-items: center;
     border-bottom: 2px solid #87CEFA;
+    gap: 15px;
 }
 
 .user-status {
@@ -38,11 +38,14 @@ body {
     font-weight: bold;
 }
 
-.user-status a:hover {
-    text-decoration: underline;
+.lang-btn {
+    background: none;
+    border: 1px solid #87CEFA;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-/* ===== ОСНОВНОЙ КОНТЕНТ ===== */
 .main-content {
     display: flex;
     flex: 1;
@@ -58,26 +61,18 @@ body {
     gap: 15px;
 }
 
-/* ===== ЛОГО - БЕЗ ГОЛУБОГО ФОНА ===== */
 .logo-image-card {
     text-align: center;
     cursor: pointer;
     background: transparent;
-    border-radius: 0;
     padding: 0;
     margin-bottom: 20px;
-    transition: all 0.3s ease;
-}
-
-.logo-image-card:hover {
-    transform: scale(1.02);
 }
 
 .logo-image-card img {
     width: 100%;
     max-width: 200px;
     height: auto;
-    border-radius: 0;
     display: block;
     margin: 0 auto;
 }
@@ -89,7 +84,6 @@ body {
     color: #87CEFA;
 }
 
-/* ===== КНОПКИ ===== */
 .action-card {
     background: #87CEFA;
     border-radius: 10px;
@@ -103,7 +97,6 @@ body {
 .action-card:hover {
     background: #6bb5e0;
     transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .action-card h3 {
@@ -127,7 +120,6 @@ body {
 .driver-card:hover {
     background: #6bb5e0;
     transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .driver-card h3 {
@@ -142,7 +134,6 @@ body {
     color: rgba(255,255,255,0.9);
 }
 
-/* ===== КАРТА ===== */
 .map-container {
     width: 75%;
     background: #e8f0f8;
@@ -193,7 +184,6 @@ body {
     color: white;
     cursor: pointer;
     font-weight: bold;
-    transition: all 0.3s ease;
 }
 
 .search-overlay button:hover {
@@ -212,7 +202,6 @@ body {
     height: 44px;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -225,7 +214,6 @@ body {
     transform: scale(1.05);
 }
 
-/* ===== ПОДВАЛ ===== */
 .footer {
     background: white;
     border-top: 2px solid #87CEFA;
@@ -246,7 +234,6 @@ body {
     color: #666;
 }
 
-/* ===== МОДАЛЬНЫЕ ОКНА ===== */
 .modal-custom {
     display: none;
     position: fixed;
@@ -296,7 +283,6 @@ body {
     font-weight: bold;
     cursor: pointer;
     width: 100%;
-    transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
@@ -314,7 +300,6 @@ body {
     margin-top: 8px;
 }
 
-/* ===== СТРАНИЦЫ ВХОДА ===== */
 .login-body {
     background: linear-gradient(135deg, #87CEFA, #6bb5e0);
     min-height: 100vh;
@@ -379,7 +364,6 @@ body {
     font-weight: bold;
     cursor: pointer;
     width: 100%;
-    transition: all 0.3s ease;
 }
 
 .login-btn:hover {
@@ -405,12 +389,26 @@ body {
     border-radius: 20px;
 }
 
-/* ===== ОТСТУПЫ ДЛЯ ЛИЧНЫХ КАБИНЕТОВ ===== */
 .driver-container,
 .profile-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 30px 20px;
+}
+
+.price-preview {
+    font-weight: bold;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.car-location-sim {
+    background: #e8f0f8;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    text-align: center;
+    font-size: 12px;
 }
 
 @media (max-width: 768px) {

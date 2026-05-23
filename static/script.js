@@ -4,39 +4,34 @@ let carMarker = null;
 let simulationInterval = null;
 
 function initMap() {
-    if (typeof L === 'undefined') {
-        console.error('Leaflet not loaded');
-        return;
-    }
-    
-    const mapElement = document.getElementById('map');
-    if (!mapElement) return;
-    
-    map = L.map('map').setView([55.751244, 37.618423], 12);
-    
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: 'OpenStreetMap contributors',
-        subdomains: 'abcd',
-        maxZoom: 19
-    }).addTo(map);
-    
-    map.on('click', async function(e) {
-        const address = await getAddressFromCoords(e.latlng.lat, e.latlng.lng);
-        const pickupInput = document.getElementById('orderPickup');
-        if (pickupInput) pickupInput.value = address;
+    ymaps.ready(function() {
+        map = new ymaps.Map('map', {
+            center: [55.751244, 37.618423],
+            zoom: 12,
+            controls: ['zoomControl', 'fullscreenControl']
+        });
         
-        if (userMarker) map.removeLayer(userMarker);
-        userMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+        map.events.add('click', async function(e) {
+            const coords = e.get('coords');
+            const address = await getAddressFromCoords(coords[0], coords[1]);
+            const pickupInput = document.getElementById('orderPickup');
+            if (pickupInput) pickupInput.value = address;
+            
+            if (userMarker) map.geoObjects.remove(userMarker);
+            userMarker = new ymaps.Placemark(coords);
+            map.geoObjects.add(userMarker);
+        });
     });
 }
 
 async function getAddressFromCoords(lat, lng) {
     try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`);
+        const response = await fetch(`https://geocode-maps.yandex.ru/1.x/?apikey=087a8bd0-4f5b-4b21-8e12-646e0b27a2c4&geocode=${lng},${lat}&format=json`);
         const data = await response.json();
-        return data.display_name?.split(',')[0] || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        const address = data.response.GeoObjectCollection.featureMember[0]?.GeoObject.metaDataProperty.GeocoderMetaData.text;
+        return address || `${lat}, ${lng}`;
     } catch (error) {
-        return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        return `${lat}, ${lng}`;
     }
 }
 
@@ -44,41 +39,44 @@ function searchAddress() {
     const query = document.getElementById('addressSearch').value;
     if (!query) return;
     
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.length > 0) {
-                const lat = parseFloat(data[0].lat);
-                const lon = parseFloat(data[0].lon);
-                map.setView([lat, lon], 15);
-                
-                if (userMarker) map.removeLayer(userMarker);
-                userMarker = L.marker([lat, lon]).addTo(map);
-                document.getElementById('orderPickup').value = query;
-            } else {
-                alert('Address not found');
-            }
-        });
+    ymaps.geocode(query, { results: 1 }).then(function(res) {
+        const firstGeoObject = res.geoObjects.get(0);
+        const coords = firstGeoObject.geometry.getCoordinates();
+        const address = firstGeoObject.getAddressLine();
+        
+        map.setCenter(coords, 15);
+        
+        if (userMarker) map.geoObjects.remove(userMarker);
+        userMarker = new ymaps.Placemark(coords);
+        map.geoObjects.add(userMarker);
+        
+        document.getElementById('orderPickup').value = address;
+    }).catch(function() {
+        alert('Адрес не найден');
+    });
 }
 
 function setCurrentLocation() {
-    if (!navigator.geolocation) {
-        alert('Geolocation not supported');
+    if (!ymaps.geolocation) {
+        alert('Геолокация не поддерживается');
         return;
     }
     
-    navigator.geolocation.getCurrentPosition(async function(position) {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        map.setView([lat, lng], 15);
+    ymaps.geolocation.get({
+        mapStateAutoApply: true
+    }).then(function(result) {
+        const coords = result.geoObjects.position;
+        map.setCenter(coords, 15);
         
-        if (userMarker) map.removeLayer(userMarker);
-        userMarker = L.marker([lat, lng]).addTo(map);
+        if (userMarker) map.geoObjects.remove(userMarker);
+        userMarker = new ymaps.Placemark(coords);
+        map.geoObjects.add(userMarker);
         
-        const address = await getAddressFromCoords(lat, lng);
-        document.getElementById('orderPickup').value = address;
-    }, function() {
-        alert('Could not get location');
+        getAddressFromCoords(coords[0], coords[1]).then(address => {
+            document.getElementById('orderPickup').value = address;
+        });
+    }).catch(function() {
+        alert('Не удалось определить местоположение');
     });
 }
 
@@ -121,7 +119,7 @@ function calculatePrice() {
     const distance = 10;
     const price = distance * pricePerKm;
     
-    if (priceDiv) priceDiv.innerHTML = `Estimated price: ${price} RUB`;
+    if (priceDiv) priceDiv.innerHTML = `Примерная стоимость: ${price} ₽`;
 }
 
 async function submitOrder() {
@@ -132,7 +130,7 @@ async function submitOrder() {
     const tariff = document.getElementById('orderTariff').value;
     
     if (!name || !phone || !pickup || !dropoff) {
-        alert('Fill all fields');
+        alert('Заполните все поля');
         return;
     }
     
@@ -157,7 +155,7 @@ async function submitOrder() {
     }
     
     await fetch('/save-order', { method: 'POST', body: formData });
-    alert(`Order confirmed!\nFrom: ${pickup}\nTo: ${dropoff}\nPrice: ${price} RUB`);
+    alert(`Заказ оформлен!\nОткуда: ${pickup}\nКуда: ${dropoff}\nСтоимость: ${price} ₽`);
     closeOrderModal();
     
     document.getElementById('orderName').value = '';
@@ -169,11 +167,11 @@ async function submitOrder() {
 function sendComment() {
     const comment = document.getElementById('driverComment').value;
     if (comment) {
-        alert('Comment sent');
+        alert('Комментарий отправлен');
         document.getElementById('driverComment').value = '';
         closeCommentModal();
     } else {
-        alert('Enter comment');
+        alert('Введите комментарий');
     }
 }
 
@@ -194,13 +192,16 @@ function initCarSimulation() {
     ];
     
     if (!carMarker) {
-        carMarker = L.marker(path[0]).addTo(map);
+        carMarker = new ymaps.Placemark(path[0], {
+            preset: 'islands#carIcon'
+        });
+        map.geoObjects.add(carMarker);
     }
     
     simulationInterval = setInterval(() => {
         step = (step + 1) % path.length;
-        carMarker.setLatLng(path[step]);
-        map.setView(path[step], 15);
+        carMarker.geometry.setCoordinates(path[step]);
+        map.setCenter(path[step], 15);
         
         const carDiv = document.getElementById('carLocation');
         if (carDiv) carDiv.style.display = 'block';
@@ -208,13 +209,13 @@ function initCarSimulation() {
 }
 
 function startSimulation() {
-    initCarSimulation();
+    if (map) initCarSimulation();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname === '/') {
         initMap();
-        startSimulation();
+        setTimeout(startSimulation, 2000);
         
         document.getElementById('searchBtn')?.addEventListener('click', searchAddress);
         document.getElementById('myLocationBtn')?.addEventListener('click', setCurrentLocation);
@@ -262,7 +263,7 @@ async function loadDriverOrders() {
     const container = document.getElementById('ordersList');
     
     if (!orders.length) {
-        container.innerHTML = '<div class="alert alert-info">No new orders</div>';
+        container.innerHTML = '<div class="alert alert-info">Нет новых заказов</div>';
         return;
     }
     
@@ -270,12 +271,12 @@ async function loadDriverOrders() {
         <div class="card mb-2">
             <div class="card-body">
                 <div>${order.pickup} → ${order.dropoff}</div>
-                <div>Tariff: ${order.tariff} | Price: ${order.price} RUB</div>
+                <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
                 <div class="mt-2">
-                    <button class="btn btn-sm btn-warning" onclick="updateStatus(${order.id}, 'Driving to passenger')">Driving to passenger</button>
-                    <button class="btn btn-sm btn-info" onclick="updateStatus(${order.id}, 'Passenger in car')">Passenger in car</button>
-                    <button class="btn btn-sm btn-success" onclick="updateStatus(${order.id}, 'Completed')">Complete</button>
-                    <button class="btn btn-sm btn-primary" onclick="acceptOrder(${order.id})">Accept</button>
+                    <button class="btn btn-sm btn-warning" onclick="updateStatus(${order.id}, 'Еду к пассажиру')">Еду к пассажиру</button>
+                    <button class="btn btn-sm btn-info" onclick="updateStatus(${order.id}, 'Пассажир в машине')">Пассажир в машине</button>
+                    <button class="btn btn-sm btn-success" onclick="updateStatus(${order.id}, 'Завершена')">Завершить</button>
+                    <button class="btn btn-sm btn-primary" onclick="acceptOrder(${order.id})">Принять</button>
                 </div>
             </div>
         </div>
@@ -289,7 +290,7 @@ async function loadDriverHistory() {
     const container = document.getElementById('historyList');
     
     if (!orders.length) {
-        container.innerHTML = '<div class="alert alert-info">No completed orders</div>';
+        container.innerHTML = '<div class="alert alert-info">Нет выполненных заказов</div>';
         return;
     }
     
@@ -297,9 +298,9 @@ async function loadDriverHistory() {
         <div class="card mb-2">
             <div class="card-body">
                 <div>${order.pickup_address} → ${order.dropoff_address}</div>
-                <div>Tariff: ${order.tariff} | Price: ${order.price} RUB</div>
-                <div>Status: ${order.status}</div>
-                <div>Date: ${order.created_at}</div>
+                <div>Тариф: ${order.tariff} | Цена: ${order.price} ₽</div>
+                <div>Статус: ${order.status}</div>
+                <div>Дата: ${order.created_at}</div>
             </div>
         </div>
     `).join('');
@@ -311,7 +312,7 @@ async function acceptOrder(orderId) {
     formData.append('driver_id', driverId);
     
     await fetch(`/assign-order/${orderId}`, { method: 'POST', body: formData });
-    alert(`Order ${orderId} accepted`);
+    alert(`Заказ ${orderId} принят`);
     loadDriverOrders();
     loadDriverHistory();
 }
@@ -320,7 +321,7 @@ async function updateStatus(orderId, status) {
     const formData = new FormData();
     formData.append('status', status);
     await fetch(`/update-order-status/${orderId}`, { method: 'POST', body: formData });
-    alert(`Status changed to "${status}"`);
+    alert(`Статус изменён на "${status}"`);
     loadDriverOrders();
     loadDriverHistory();
 }
@@ -341,7 +342,7 @@ if (window.location.pathname === '/login-user') {
             if (result.success) {
                 localStorage.setItem('userId', result.user_id);
                 localStorage.setItem('userName', result.fullname);
-                alert(`Welcome, ${result.fullname}!`);
+                alert(`Добро пожаловать, ${result.fullname}!`);
                 window.location.href = '/user-profile';
             } else {
                 alert(result.error);
@@ -366,10 +367,10 @@ if (window.location.pathname === '/register') {
             const result = await response.json();
             
             if (result.success) {
-                alert('Registration successful. Please login.');
+                alert('Регистрация успешна. Теперь войдите.');
                 window.location.href = '/login-user';
             } else {
-                alert(result.error || 'Registration error');
+                alert(result.error || 'Ошибка регистрации');
             }
         });
     }
@@ -391,7 +392,7 @@ if (window.location.pathname === '/user-profile') {
         const container = document.getElementById('ordersHistory');
         
         if (!orders.length) {
-            container.innerHTML = '<div class="alert alert-info">No orders yet</div>';
+            container.innerHTML = '<div class="alert alert-info">У вас пока нет заказов</div>';
             return;
         }
         
@@ -400,9 +401,9 @@ if (window.location.pathname === '/user-profile') {
                 <div class="card-body">
                     <div>${order.date}</div>
                     <div>${order.pickup} → ${order.dropoff}</div>
-                    <div>${order.tariff} | ${order.price} RUB</div>
-                    <div>Status: ${order.status}</div>
-                    <a href="/order/${order.id}" class="btn btn-sm btn-info mt-2">Details</a>
+                    <div>${order.tariff} | ${order.price} ₽</div>
+                    <div>Статус: ${order.status}</div>
+                    <a href="/order/${order.id}" class="btn btn-sm btn-info mt-2">Детали</a>
                 </div>
             </div>
         `).join('');
@@ -428,7 +429,7 @@ if (window.location.pathname === '/application') {
             formData.append('role', document.getElementById('appRole').value);
             
             await fetch('/save-application', { method: 'POST', body: formData });
-            alert('Thank you! We will contact you.');
+            alert('Спасибо! Мы свяжемся с вами.');
             window.location.href = '/login';
         });
     }
@@ -445,7 +446,7 @@ if (window.location.pathname.includes('/order/')) {
     stars.forEach(star => {
         star.addEventListener('click', function() {
             const rating = this.getAttribute('data-rating');
-            alert('Оценка: ' + rating + ' звезд');
+            alert('Оценка: ' + rating + ' звёзд');
         });
     });
     

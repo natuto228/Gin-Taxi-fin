@@ -10,7 +10,7 @@
 </head>
 <body class="login-body">
 
-<a href="/" class="header-back">← На главную</a>
+<a href="/" class="header-back">На главную</a>
 
 <div class="login-card">
     <div class="text-center">
@@ -25,11 +25,15 @@
         <label class="login-label">Пароль</label>
         <input type="password" id="driverPassword" class="login-input" required>
         
+        <label class="login-label">Код из SMS (2FA)</label>
+        <input type="text" id="smsCode" class="login-input" placeholder="Введите 123456">
+        
         <button type="submit" class="login-btn">Войти</button>
     </form>
     
     <div class="login-test-info">
-        <span>Тест: driver / 12345</span>
+        <span>Тест: driver / 12345</span><br>
+        <span>SMS код: 123456</span>
     </div>
 </div>
 

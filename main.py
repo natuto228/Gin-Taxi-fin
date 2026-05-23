@@ -13,7 +13,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
-# Подключение к PostgreSQL
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 def get_db():
@@ -30,6 +29,7 @@ def init_database():
             phone TEXT,
             email TEXT UNIQUE,
             password TEXT,
+            role TEXT DEFAULT 'user',
             created_at TIMESTAMP
         )
     ''')
@@ -38,6 +38,7 @@ def init_database():
         CREATE TABLE IF NOT EXISTS orders (
             id SERIAL PRIMARY KEY,
             user_id INTEGER,
+            driver_id INTEGER,
             guest_name TEXT,
             guest_phone TEXT,
             guest_email TEXT,
@@ -45,7 +46,7 @@ def init_database():
             dropoff_address TEXT,
             tariff TEXT,
             price REAL,
-            status TEXT,
+            status TEXT DEFAULT 'Новый',
             created_at TIMESTAMP
         )
     ''')
@@ -61,13 +62,19 @@ def init_database():
         )
     ''')
     
-    # Создаём тестового пользователя
     cursor.execute('SELECT * FROM users WHERE email = %s', ('user@gin.ru',))
     if not cursor.fetchone():
         cursor.execute('''
-            INSERT INTO users (fullname, phone, email, password, created_at)
-            VALUES (%s, %s, %s, %s, %s)
-        ''', ('Тестовый Пользователь', '+79991234567', 'user@gin.ru', '123456', datetime.now()))
+            INSERT INTO users (fullname, phone, email, password, role, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        ''', ('Тестовый Пользователь', '+79991234567', 'user@gin.ru', '123456', 'user', datetime.now()))
+    
+    cursor.execute('SELECT * FROM users WHERE email = %s', ('driver@gin.ru',))
+    if not cursor.fetchone():
+        cursor.execute('''
+            INSERT INTO users (fullname, phone, email, password, role, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        ''', ('Тестовый Водитель', '+79998887766', 'driver@gin.ru', '12345', 'driver', datetime.now()))
     
     conn.commit()
     cursor.close()
@@ -94,9 +101,9 @@ async def register(
     cursor = conn.cursor()
     try:
         cursor.execute('''
-            INSERT INTO users (fullname, phone, email, password, created_at)
-            VALUES (%s, %s, %s, %s, %s)
-        ''', (fullname, phone, email, password, datetime.now()))
+            INSERT INTO users (fullname, phone, email, password, role, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        ''', (fullname, phone, email, password, 'user', datetime.now()))
         conn.commit()
         return {"success": True}
     except Exception:
@@ -113,12 +120,12 @@ async def login_user_page(request: Request):
 async def login_user(email: str = Form(...), password: str = Form(...)):
     conn = get_db()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute('SELECT id, fullname, phone, email FROM users WHERE email = %s AND password = %s', (email, password))
+    cursor.execute('SELECT id, fullname, phone, email, role FROM users WHERE email = %s AND password = %s', (email, password))
     user = cursor.fetchone()
     cursor.close()
     conn.close()
     if user:
-        return {"success": True, "user_id": user['id'], "fullname": user['fullname'], "phone": user['phone'], "email": user['email']}
+        return {"success": True, "user_id": user['id'], "fullname": user['fullname'], "phone": user['phone'], "email": user['email'], "role": user['role']}
     return {"success": False, "error": "Неверный email или пароль"}
 
 @app.get("/user-profile", response_class=HTMLResponse)
@@ -181,6 +188,41 @@ async def get_all_orders():
     conn.close()
     return [{"id": o['id'], "pickup": o['pickup_address'], "dropoff": o['dropoff_address'], "tariff": o['tariff'], "price": o['price'], "status": o['status']} for o in orders]
 
+@app.get("/driver-orders/{driver_id}")
+async def get_driver_orders(driver_id: int):
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute('''
+        SELECT id, pickup_address, dropoff_address, tariff, price, status, created_at
+        FROM orders WHERE driver_id = %s ORDER BY created_at DESC
+    ''', (driver_id,))
+    orders = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return orders
+
+@app.post("/assign-order/{order_id}")
+async def assign_order(order_id: int, driver_id: int = Form(...)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE orders SET driver_id = %s, status = 'В пути' WHERE id = %s
+    ''', (driver_id, order_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"success": True}
+
+@app.post("/update-order-status/{order_id}")
+async def update_order_status(order_id: int, status: str = Form(...)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE orders SET status = %s WHERE id = %s', (status, order_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"success": True}
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_driver_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
@@ -188,6 +230,50 @@ async def login_driver_page(request: Request):
 @app.get("/driver-dashboard", response_class=HTMLResponse)
 async def driver_dashboard(request: Request):
     return templates.TemplateResponse("driver_dashboard.html", {"request": request})
+
+@app.get("/order/{order_id}", response_class=HTMLResponse)
+async def order_detail(request: Request, order_id: int):
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute('SELECT id, pickup_address, dropoff_address, tariff, price, status FROM orders WHERE id = %s', (order_id,))
+    order = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return templates.TemplateResponse("order_detail.html", {"request": request, "order": order})
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_panel(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})
+
+@app.get("/api/all-orders")
+async def api_all_orders():
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute('SELECT * FROM orders ORDER BY id DESC')
+    orders = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return orders
+
+@app.get("/api/all-drivers")
+async def api_all_drivers():
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute('SELECT id, fullname, phone, email FROM users WHERE role = %s', ('driver',))
+    drivers = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return drivers
+
+@app.post("/api/assign-order")
+async def admin_assign_order(order_id: int = Form(...), driver_id: int = Form(...)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE orders SET driver_id = %s, status = %s WHERE id = %s', (driver_id, 'Назначен', order_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"success": True}
 
 @app.get("/application", response_class=HTMLResponse)
 async def application_page(request: Request):
