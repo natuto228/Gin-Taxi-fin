@@ -3,27 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <title>Gin Taxi</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: white; }
-        .header { background: #87CEFA; padding: 15px; display: flex; justify-content: space-between; }
-        .main { display: flex; padding: 20px; gap: 20px; }
-        .sidebar { width: 250px; }
-        .map-container { flex: 1; }
-        #map { height: 500px; width: 100%; }
-        button { background: #87CEFA; border: none; padding: 10px; margin: 5px; cursor: pointer; border-radius: 5px; }
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid #ccc; z-index: 1000; width: 300px; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
-        input, select, textarea { display: block; width: 100%; margin: 10px 0; padding: 8px; }
-        .card { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
-        .footer { background: #87CEFA; text-align: center; padding: 10px; margin-top: 20px; }
-    </style>
+    <link rel="stylesheet" href="/static/style.css">
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+    <style>
+        /* Дополнительные стили для модальных окон, которых нет в style.css */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            width: 350px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .modal input, .modal select, .modal textarea {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .modal button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal .btn-primary {
+            background: #0dcaf0;
+            color: white;
+        }
+        .modal .btn-primary:hover {
+            background: #0b5ed7;
+        }
+        .modal .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .modal .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
 
 <div class="header">
-    <span>Gin Taxi</span>
+    <span>🚕 Gin Taxi</span>
     <span id="userStatus">
         <a href="#" onclick="showLoginModal()">Войти</a> | 
         <a href="#" onclick="showRegisterModal()">Регистрация</a>
@@ -32,10 +84,10 @@
 
 <div class="main">
     <div class="sidebar">
-        <button id="orderBtn">Выбрать тариф</button>
-        <button id="phoneOrderBtn">Заказ по телефону</button>
-        <button id="commentBtn">Комментарий водителю</button>
-        <button id="driverLoginBtn">Водитель</button>
+        <button id="orderBtn">🚕 Выбрать тариф</button>
+        <button id="phoneOrderBtn">📞 Заказ по телефону</button>
+        <button id="commentBtn">💬 Комментарий водителю</button>
+        <button id="driverLoginBtn">👨‍✈️ Водитель</button>
     </div>
     <div class="map-container">
         <div id="map"></div>
@@ -47,8 +99,8 @@
 </div>
 
 <!-- Модалка заказа -->
-<div id="orderModal" class="modal">
-    <h3>Заказ такси</h3>
+<div id="orderModal" class="modal" style="display: none;">
+    <h3 style="margin-top: 0;">Заказ такси</h3>
     <input type="text" id="orderName" placeholder="ФИО">
     <input type="text" id="orderPhone" placeholder="Телефон">
     <input type="text" id="orderPickup" placeholder="Откуда">
@@ -58,49 +110,49 @@
         <option>Комфорт</option>
         <option>Бизнес</option>
     </select>
-    <div id="pricePreview"></div>
-    <button id="submitOrderBtn">Заказать</button>
-    <button onclick="closeOrderModal()">Отмена</button>
+    <div id="pricePreview" style="margin: 10px 0; color: #0b5ed7; font-weight: bold;"></div>
+    <button id="submitOrderBtn" class="btn-primary">Заказать</button>
+    <button onclick="closeOrderModal()" class="btn-secondary">Отмена</button>
 </div>
 
 <!-- Модалка комментария -->
-<div id="commentModal" class="modal">
-    <h3>Комментарий</h3>
-    <textarea id="driverComment" rows="3"></textarea>
-    <button id="sendCommentBtn">Отправить</button>
-    <button onclick="closeCommentModal()">Отмена</button>
+<div id="commentModal" class="modal" style="display: none;">
+    <h3 style="margin-top: 0;">Комментарий водителю</h3>
+    <textarea id="driverComment" rows="3" placeholder="Ваши пожелания..."></textarea>
+    <button id="sendCommentBtn" class="btn-primary">Отправить</button>
+    <button onclick="closeCommentModal()" class="btn-secondary">Отмена</button>
 </div>
 
 <!-- Модалка входа -->
-<div id="loginModal" class="modal">
-    <h3>Вход</h3>
+<div id="loginModal" class="modal" style="display: none;">
+    <h3 style="margin-top: 0;">Вход</h3>
     <input type="email" id="loginEmail" placeholder="Email">
     <input type="password" id="loginPassword" placeholder="Пароль">
-    <button id="doLoginBtn">Войти</button>
-    <button onclick="closeLoginModal()">Отмена</button>
+    <button id="doLoginBtn" class="btn-primary">Войти</button>
+    <button onclick="closeLoginModal()" class="btn-secondary">Отмена</button>
 </div>
 
 <!-- Модалка регистрации -->
-<div id="registerModal" class="modal">
-    <h3>Регистрация</h3>
+<div id="registerModal" class="modal" style="display: none;">
+    <h3 style="margin-top: 0;">Регистрация</h3>
     <input type="text" id="regName" placeholder="ФИО">
     <input type="text" id="regPhone" placeholder="Телефон">
     <input type="email" id="regEmail" placeholder="Email">
     <input type="password" id="regPassword" placeholder="Пароль">
-    <button id="doRegisterBtn">Зарегистрироваться</button>
-    <button onclick="closeRegisterModal()">Отмена</button>
+    <button id="doRegisterBtn" class="btn-primary">Зарегистрироваться</button>
+    <button onclick="closeRegisterModal()" class="btn-secondary">Отмена</button>
 </div>
 
 <!-- Модалка профиля -->
-<div id="profileModal" class="modal" style="width: 400px;">
-    <h3>Мой профиль</h3>
+<div id="profileModal" class="modal" style="display: none; width: 450px;">
+    <h3 style="margin-top: 0;">Мой профиль</h3>
     <div id="profileInfo"></div>
     <div id="ordersHistory"></div>
-    <button onclick="logout()">Выйти</button>
-    <button onclick="closeProfileModal()">Закрыть</button>
+    <button onclick="logout()" class="btn-secondary" style="background: #dc3545;">Выйти</button>
+    <button onclick="closeProfileModal()" class="btn-secondary">Закрыть</button>
 </div>
 
-<div id="overlay" class="overlay"></div>
+<div id="overlay" class="overlay" style="display: none;"></div>
 
 <script>
     // ========== ПЕРЕМЕННЫЕ ==========
@@ -230,10 +282,10 @@
         if (!id) return;
         var response = await fetch('/user-orders/' + id);
         var orders = await response.json();
-        document.getElementById('profileInfo').innerHTML = '<p>Пользователь: ' + localStorage.getItem('userName') + '</p>';
+        document.getElementById('profileInfo').innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p>';
         var html = '<h4>История заказов</h4>';
         if (orders.length === 0) html += '<p>Нет заказов</p>';
-        else orders.forEach(o => { html += '<div class="card">' + o.pickup + ' → ' + o.dropoff + '<br>' + o.tariff + ' | ' + o.price + ' ₽<br>' + o.status + '</div>'; });
+        else orders.forEach(o => { html += '<div class="card">' + o.pickup + ' → ' + o.dropoff + '<br>' + o.tariff + ' | ' + o.price + ' ₽<br><small>' + o.status + '</small></div>'; });
         document.getElementById('ordersHistory').innerHTML = html;
     }
     
