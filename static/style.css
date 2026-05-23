@@ -18,7 +18,6 @@ body {
     min-height: 100vh;
 }
 
-/* ШАПКА */
 .header {
     background: #87CEFA;
     padding: 12px 25px;
@@ -39,7 +38,6 @@ body {
     font-family: 'SouthGhetto', sans-serif;
 }
 
-/* ОСНОВНОЙ КОНТЕНТ */
 .main-content {
     display: flex;
     flex: 1;
@@ -47,7 +45,6 @@ body {
     gap: 20px;
 }
 
-/* ЛЕВАЯ КОЛОНКА */
 .sidebar {
     width: 20%;
     display: flex;
@@ -55,7 +52,6 @@ body {
     gap: 12px;
 }
 
-/* КАРТИНКА БЕЗ ГРАНИЦ */
 .logo-image-card {
     text-align: center;
     cursor: pointer;
@@ -78,20 +74,18 @@ body {
     color: black;
 }
 
-/* КНОПКИ */
 .action-card {
     background: #87CEFA;
     border-radius: 8px;
     padding: 10px 12px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.25s ease-in-out;
+    transition: all 0.2s ease;
 }
 
 .action-card:hover {
     background: #6bb5e0;
-    transform: translateX(6px);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    transform: translateX(5px);
 }
 
 .action-card h3 {
@@ -101,7 +95,6 @@ body {
     margin-bottom: 0;
 }
 
-/* КНОПКА ВОДИТЕЛЯ - ПОЛУКРУГОМ */
 .driver-card {
     background: #87CEFA;
     border-radius: 0 30px 30px 0;
@@ -109,15 +102,14 @@ body {
     margin-left: -20px;
     text-align: left;
     cursor: pointer;
-    transition: all 0.25s ease-in-out;
+    transition: all 0.2s ease;
     width: calc(100% + 20px);
     margin-top: auto;
 }
 
 .driver-card:hover {
     background: #6bb5e0;
-    transform: translateX(6px);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    transform: translateX(5px);
 }
 
 .driver-card h3 {
@@ -132,23 +124,17 @@ body {
     color: rgba(255,255,255,0.8);
 }
 
-/* КАРТА */
 .map-container {
     width: 80%;
-    background: #e8f0f8;
-    border-radius: 12px;
-    overflow: hidden;
     position: relative;
 }
 
 #map {
-    height: 100%;
+    height: 580px;
     width: 100%;
-    min-height: 580px;
     border-radius: 12px;
 }
 
-/* ПОИСК НАД КАРТОЙ */
 .search-overlay {
     position: absolute;
     top: 15px;
@@ -181,7 +167,6 @@ body {
     color: white;
 }
 
-/* КНОПКА ГЕОЛОКАЦИИ */
 .geolocation-btn {
     position: absolute;
     bottom: 20px;
@@ -195,21 +180,18 @@ body {
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     font-size: 22px;
-    transition: all 0.2s;
 }
 
 .geolocation-btn:hover {
     transform: scale(1.05);
 }
 
-/* ПОДВАЛ */
 .footer {
     background: #87CEFA;
     text-align: center;
     padding: 12px;
     font-size: 11px;
     margin-top: auto;
-    letter-spacing: 1px;
 }
 
 .footer-content {
@@ -223,7 +205,6 @@ body {
     color: black;
 }
 
-/* МОДАЛЬНЫЕ ОКНА */
 .modal {
     display: none;
     position: fixed;
@@ -255,8 +236,6 @@ body {
     border-radius: 6px;
     font-family: 'SouthGhetto', sans-serif;
     font-size: 12px;
-    background: white;
-    color: black;
 }
 
 .modal button {
@@ -271,12 +250,10 @@ body {
     font-family: 'SouthGhetto', sans-serif;
     font-size: 12px;
     margin-top: 5px;
-    transition: all 0.2s;
 }
 
 .modal button:hover {
-    filter: brightness(0.95);
-    transform: scale(1.01);
+    background: #6bb5e0;
 }
 
 .modal .btn-secondary {
@@ -311,7 +288,6 @@ body {
     z-index: 999;
 }
 
-/* КАРТОЧКИ В ПРОФИЛЕ */
 .order-card {
     background: #f8f9fa;
     border-radius: 6px;
@@ -326,7 +302,13 @@ body {
     margin-top: 15px;
 }
 
-/* АДАПТАЦИЯ */
+#pricePreview {
+    margin: 8px 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: #87CEFA;
+}
+
 @media (max-width: 768px) {
     .main-content {
         flex-direction: column;
@@ -343,11 +325,4 @@ body {
         gap: 12px;
         flex-direction: column;
     }
-}
-
-#pricePreview {
-    margin: 8px 0;
-    font-size: 12px;
-    font-weight: bold;
-    color: #87CEFA;
 }

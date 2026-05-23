@@ -4,29 +4,24 @@ var userId = localStorage.getItem('userId');
 var userName = localStorage.getItem('userName');
 var currentLang = 'ru';
 
-// ========== КАРТА (ТОЛЬКО ЯНДЕКС) ==========
+// ========== КАРТА ==========
 function initMap() {
-    if (typeof ymaps === 'undefined') {
-        setTimeout(initMap, 500);
-        return;
-    }
+    if (typeof ymaps === 'undefined') { setTimeout(initMap, 500); return; }
     ymaps.ready(function() {
         map = new ymaps.Map('map', {
             center: [55.751244, 37.618423],
             zoom: 12,
-            controls: ['zoomControl', 'fullscreenControl']
+            controls: ['zoomControl']
         });
         map.events.add('click', function(e) {
             var coords = e.get('coords');
             var pickupInput = document.getElementById('orderPickup');
             if (pickupInput) pickupInput.value = coords[0].toFixed(4) + ', ' + coords[1].toFixed(4);
         });
-        console.log('Яндекс карта загружена');
+        console.log('Карта загружена');
     });
 }
-
-// Запускаем карту
-setTimeout(initMap, 100);
+initMap();
 
 // ========== ПОИСК АДРЕСА ==========
 var searchBtn = document.getElementById('searchAddressBtn');
@@ -57,16 +52,7 @@ if (geoBtn) {
     };
 }
 
-// ========== АНГЛИЙСКИЙ ЯЗЫК ==========
-var langBtn = document.getElementById('langBtn');
-if (langBtn) {
-    langBtn.onclick = function() {
-        currentLang = (currentLang === 'ru') ? 'en' : 'ru';
-        alert(currentLang === 'ru' ? 'Язык переключен на русский' : 'Language switched to English');
-    };
-}
-
-// ========== ОБЩИЕ ФУНКЦИИ ==========
+// ========== ФУНКЦИИ КНОПОК ==========
 function showOverlay() { 
     var overlay = document.getElementById('overlay');
     if (overlay) overlay.style.display = 'block';
@@ -135,7 +121,7 @@ function closeProfileModal() {
 }
 
 function makePhoneCall() { 
-    window.location.href = 'tel:+78121234567'; 
+    window.location.href = 'tel:+78121234567';
 }
 
 function calculatePrice() {
@@ -143,13 +129,11 @@ function calculatePrice() {
     var dropoff = document.getElementById('orderDropoff');
     var tariff = document.getElementById('orderTariff');
     var priceDiv = document.getElementById('pricePreview');
-    
     if (pickup && dropoff && tariff && priceDiv && pickup.value && dropoff.value) {
         var pricePerKm = 25;
         if (tariff.value === 'Комфорт') pricePerKm = 35;
         if (tariff.value === 'Бизнес') pricePerKm = 50;
-        var price = 10 * pricePerKm;
-        priceDiv.innerHTML = 'Примерная стоимость: ' + price + ' ₽';
+        priceDiv.innerHTML = 'Примерная стоимость: ' + (10 * pricePerKm) + ' ₽';
     }
 }
 
@@ -230,7 +214,7 @@ async function register() {
     }
 }
 
-// ========== ВХОД ПОЛЬЗОВАТЕЛЯ ==========
+// ========== ВХОД ==========
 async function login() {
     var formData = new FormData();
     formData.append('email', document.getElementById('loginEmail').value);
@@ -248,7 +232,7 @@ async function login() {
     }
 }
 
-// ========== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ==========
+// ========== ПРОФИЛЬ ==========
 async function loadProfile() {
     var id = localStorage.getItem('userId');
     if (!id) return;
@@ -258,18 +242,27 @@ async function loadProfile() {
     var ordersHistory = document.getElementById('ordersHistory');
     
     if (profileInfo) profileInfo.innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p><hr>';
-    var html = '<h4 style="margin: 10px 0;">История заказов</h4>';
     if (orders.length === 0) {
-        html += '<p>У вас пока нет заказов</p>';
+        if (ordersHistory) ordersHistory.innerHTML = '<p>У вас пока нет заказов</p>';
     } else {
+        var html = '<h4 style="margin: 10px 0;">История заказов</h4>';
         orders.forEach(function(order) {
             html += '<div class="order-card"><strong>' + order.pickup + '</strong> → <strong>' + order.dropoff + '</strong><br>' +
                     'Тариф: ' + order.tariff + ' | Цена: ' + order.price + ' ₽<br>' +
                     'Статус: ' + order.status + '<br>' +
                     '<small>' + new Date(order.date).toLocaleString() + '</small></div>';
         });
+        if (ordersHistory) ordersHistory.innerHTML = html;
     }
-    if (ordersHistory) ordersHistory.innerHTML = html;
+}
+
+// ========== АНГЛИЙСКИЙ ЯЗЫК ==========
+var langBtn = document.getElementById('langBtn');
+if (langBtn) {
+    langBtn.onclick = function() {
+        currentLang = (currentLang === 'ru') ? 'en' : 'ru';
+        alert(currentLang === 'ru' ? 'Язык переключен на русский' : 'Language switched to English');
+    };
 }
 
 // ========== НАЗНАЧЕНИЕ КНОПОК ==========
