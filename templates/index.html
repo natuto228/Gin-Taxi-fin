@@ -2,122 +2,97 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gin Taxi - Заказ такси</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; }
-        #map { height: 400px; width: 100%; margin-top: 20px; }
-        button { margin: 5px; padding: 10px 20px; background: #87CEFA; border: none; border-radius: 5px; cursor: pointer; }
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid #ccc; z-index: 1000; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
-        input, textarea { display: block; margin: 10px auto; padding: 5px; width: 90%; }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
 </head>
 <body>
 
-<h1>Gin Taxi</h1>
-
-<button id="orderBtn">Выбрать тариф</button>
-<button id="phoneOrderBtn">Заказ по телефону</button>
-<button id="commentBtn">Комментарий водителю</button>
-<button id="driverLoginBtn">Войти в профиль</button>
-
-<div id="map"></div>
-
-<!-- Модальное окно заказа -->
-<div id="orderModal" class="modal">
-    <h3>Заказ такси</h3>
-    <input type="text" id="orderName" placeholder="ФИО">
-    <input type="text" id="orderPickup" placeholder="Откуда">
-    <input type="text" id="orderDropoff" placeholder="Куда">
-    <button id="submitOrderBtn">Заказать</button>
-    <button onclick="closeOrderModal()">Отмена</button>
-</div>
-
-<!-- Модальное окно комментария -->
-<div id="commentModal" class="modal">
-    <h3>Комментарий водителю</h3>
-    <textarea id="driverComment" rows="3" cols="30" placeholder="Ваши пожелания..."></textarea>
-    <button id="sendCommentBtn">Отправить</button>
-    <button onclick="closeCommentModal()">Отмена</button>
-</div>
-
-<div id="overlay" class="overlay" onclick="closeOrderModal(); closeCommentModal();"></div>
-
-<script>
-    var map;
-    var userMarker = null;
+<div class="page-container">
     
-    // ===== КАРТА =====
-    function initMap() {
-        if (typeof ymaps === 'undefined') {
-            setTimeout(initMap, 500);
-            return;
-        }
+    <header class="header">
+        <div class="user-status">
+            <i class="fas fa-user-circle"></i>
+            <span id="userNameHeader">
+                <a href="/login-user">Войти</a>
+            </span>
+        </div>
+    </header>
+    
+    <div class="main-content">
         
-        ymaps.ready(function() {
-            map = new ymaps.Map('map', {
-                center: [55.751244, 37.618423],
-                zoom: 12,
-                controls: ['zoomControl', 'fullscreenControl']
-            });
+        <aside class="sidebar">
             
-            // Клик на карту
-            map.events.add('click', function(e) {
-                var coords = e.get('coords');
-                var pickupInput = document.getElementById('orderPickup');
-                if (pickupInput) {
-                    pickupInput.value = coords[0].toFixed(4) + ', ' + coords[1].toFixed(4);
-                }
-                
-                if (userMarker) {
-                    map.geoObjects.remove(userMarker);
-                }
-                userMarker = new ymaps.Placemark(coords);
-                map.geoObjects.add(userMarker);
-            });
+            <div class="logo-image-card" onclick="window.location.href='/'">
+                <img src="/static/gin_photo.jpg" alt="Gin">
+                <p>Gin Taxi</p>
+            </div>
             
-            console.log('Яндекс карта загружена');
-        });
-    }
+            <div class="action-card" id="phoneOrderBtn">
+                <h3>Заказ по телефону</h3>
+            </div>
+            
+            <div class="action-card" id="orderBtn">
+                <h3>Выбрать тариф</h3>
+            </div>
+            
+            <div class="action-card" id="commentBtn">
+                <h3>Комментарий водителю</h3>
+            </div>
+            
+            <div class="driver-card" id="driverLoginBtn">
+                <h3>Войти в профиль</h3>
+                <p>Работа в такси</p>
+            </div>
+            
+        </aside>
+        
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
     
-    // Запуск карты
-    initMap();
-    
-    // ===== КНОПКИ =====
-    function openOrderModal() { document.getElementById('orderModal').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
-    function closeOrderModal() { document.getElementById('orderModal').style.display = 'none'; document.getElementById('overlay').style.display = 'none'; }
-    function openCommentModal() { document.getElementById('commentModal').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
-    function closeCommentModal() { document.getElementById('commentModal').style.display = 'none'; document.getElementById('overlay').style.display = 'none'; }
-    function makePhoneCall() { alert('Звонок по телефону +7 (812) 123-45-67'); }
-    function submitOrder() { 
-        var name = document.getElementById('orderName').value;
-        var pickup = document.getElementById('orderPickup').value;
-        var dropoff = document.getElementById('orderDropoff').value;
-        if (!name || !pickup || !dropoff) {
-            alert('Заполните все поля');
-            return;
-        }
-        alert('Заказ оформлен!\nОткуда: ' + pickup + '\nКуда: ' + dropoff);
-        closeOrderModal();
-    }
-    function sendComment() { 
-        var comment = document.getElementById('driverComment').value;
-        alert('Комментарий отправлен: ' + comment);
-        closeCommentModal();
-    }
-    function goToLogin() { alert('Переход на страницу входа'); }
-    
-    document.getElementById('orderBtn').onclick = openOrderModal;
-    document.getElementById('phoneOrderBtn').onclick = makePhoneCall;
-    document.getElementById('commentBtn').onclick = openCommentModal;
-    document.getElementById('driverLoginBtn').onclick = goToLogin;
-    document.getElementById('submitOrderBtn').onclick = submitOrder;
-    document.getElementById('sendCommentBtn').onclick = sendComment;
-    
-    window.closeOrderModal = closeOrderModal;
-    window.closeCommentModal = closeCommentModal;
-</script>
+    <footer class="footer">
+        <div class="footer-content">
+            <span>Ибрагимова Ф.Н.</span>
+            <span>Учебный проект</span>
+            <span>Gin Taxi 2026</span>
+        </div>
+    </footer>
+</div>
+
+<div id="orderModal" class="modal-custom">
+    <div class="modal-content">
+        <h3>Заказ такси</h3>
+        <hr>
+        <input type="text" id="orderName" placeholder="ФИО">
+        <input type="tel" id="orderPhone" placeholder="Телефон">
+        <input type="text" id="orderPickup" placeholder="Адрес подачи">
+        <input type="text" id="orderDropoff" placeholder="Адрес назначения">
+        <select id="orderTariff">
+            <option value="Эконом (25 руб/км)">Эконом - 25 руб/км</option>
+            <option value="Комфорт (35 руб/км)">Комфорт - 35 руб/км</option>
+            <option value="Бизнес (50 руб/км)">Бизнес - 50 руб/км</option>
+        </select>
+        <div id="pricePreview" class="price-preview"></div>
+        <button class="btn-primary" id="submitOrderBtn">Заказать такси</button>
+        <button class="btn-secondary" onclick="closeOrderModal()">Отмена</button>
+    </div>
+</div>
+
+<div id="commentModal" class="modal-custom">
+    <div class="modal-content">
+        <h3>Комментарий водителю</h3>
+        <textarea id="driverComment" rows="4" placeholder="Ваши пожелания..."></textarea>
+        <button class="btn-primary" id="sendCommentBtn">Отправить</button>
+        <button class="btn-secondary" onclick="closeCommentModal()">Отмена</button>
+    </div>
+</div>
+
+<script src="/static/script.js"></script>
 
 </body>
 </html>
