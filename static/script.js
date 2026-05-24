@@ -401,3 +401,31 @@ window.logout = logout;
 window.searchAddress = searchAddress;
 window.getMyLocation = getMyLocation;
 window.closeAllModals = closeAllModals;
+// ===== НЕЗАВИСИМАЯ КНОПКА ПОИСКА =====
+document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('searchBtn');
+    if (btn) {
+        btn.onclick = function() {
+            var query = document.getElementById('addressSearch').value;
+            if (!query) {
+                alert('Введите адрес');
+                return;
+            }
+            if (window.map) {
+                window.ymaps.geocode(query, { results: 1 }).then(function(res) {
+                    var obj = res.geoObjects.get(0);
+                    if (obj) {
+                        var coords = obj.geometry.getCoordinates();
+                        window.map.setCenter(coords, 15);
+                    } else {
+                        alert('Адрес не найден');
+                    }
+                }).catch(function() {
+                    alert('Ошибка поиска');
+                });
+            } else {
+                alert('Карта не загружена');
+            }
+        };
+    }
+});

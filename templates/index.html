@@ -6,12 +6,14 @@
     <title>Gin Taxi</title>
     <link href="https://fonts.cdnfonts.com/css/southghetto" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=087a8bd0-4f5b-4b21-8e12-646e0b27a2c4&lang=ru_RU" type="text/javascript"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
 </head>
 <body>
 
 <div class="page-container">
     
+    <button id="searchBtn" style="position: absolute; top: 10px; right: 10px; z-index: 1000; background: #87CEFA; border: none; padding: 8px 16px; border-radius: 20px; color: white;"> Найти</button>
+
     <header class="header">
         <div class="logo">Gin Taxi</div>
         <div class="user-status" id="userStatus">
@@ -44,8 +46,7 @@
         
         <div class="map-area">
             <div class="search-block">
-                <input type="text" id="addressSearch" placeholder="Поиск адреса">
-                <button onclick="searchAddress()">Найти</button>
+              <input type="text" id="addressSearch" placeholder="Поиск адреса">
             </div>
             <button class="geo-btn" onclick="getMyLocation()">📍</button>
             <div id="map"></div>
