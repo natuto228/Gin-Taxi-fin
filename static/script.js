@@ -439,3 +439,28 @@ window.logout = logout;
 window.searchAddress = searchAddress;
 window.getMyLocation = getMyLocation;
 window.closeAllModals = closeAllModals;
+// ===== ФУНКЦИЯ ПОИСКА (глобальная) =====
+window.searchAddress = function() {
+    var query = document.getElementById('addressSearch').value;
+    if (!query) {
+        alert('Введите адрес для поиска');
+        return;
+    }
+    
+    if (typeof map === 'undefined' || map === null) {
+        alert('Карта ещё не загружена');
+        return;
+    }
+    
+    ymaps.geocode(query, { results: 1 }).then(function(res) {
+        var obj = res.geoObjects.get(0);
+        if (obj) {
+            var coords = obj.geometry.getCoordinates();
+            map.setCenter(coords, 15);
+        } else {
+            alert('Адрес не найден');
+        }
+    }).catch(function() {
+        alert('Ошибка поиска');
+    });
+};
