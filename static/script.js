@@ -21,34 +21,14 @@ function initMap() {
 }
 initMap();
 
-// ========== ПОИСК АДРЕСА ==========
+// ========== ПОИСК ==========
 function searchAddress() {
     var query = document.getElementById('addressSearch').value;
-    if (!query) {
-        alert('Введите адрес для поиска');
-        return;
-    }
-    
-    if (typeof map === 'undefined' || map === null) {
-        alert('Карта ещё не загружена, попробуйте через секунду');
-        return;
-    }
-    
+    if (!query) return;
     ymaps.geocode(query, { results: 1 }).then(function(res) {
-        var firstGeoObject = res.geoObjects.get(0);
-        if (firstGeoObject) {
-            var coords = firstGeoObject.geometry.getCoordinates();
-            map.setCenter(coords, 15);
-            if (window.searchMarker) map.geoObjects.remove(window.searchMarker);
-            window.searchMarker = new ymaps.Placemark(coords);
-            map.geoObjects.add(window.searchMarker);
-        } else {
-            alert('Адрес не найден');
-        }
-    }).catch(function(err) {
-        console.error('Ошибка геокодирования:', err);
-        alert('Ошибка при поиске адреса');
-    });
+        var coords = res.geoObjects.get(0).geometry.getCoordinates();
+        map.setCenter(coords, 15);
+    }).catch(function() { alert('Адрес не найден'); });
 }
 
 function getMyLocation() {
@@ -59,18 +39,6 @@ function getMyLocation() {
     } else {
         alert('Геолокация не поддерживается');
     }
-}
-
-// ========== НАЗНАЧЕНИЕ КНОПКИ ПОИСКА ==========
-var searchBtn = document.getElementById('searchAddressBtn');
-if (searchBtn) {
-    searchBtn.onclick = searchAddress;
-}
-
-// ========== ГЕОЛОКАЦИЯ ==========
-var geoBtn = document.getElementById('geolocationBtn');
-if (geoBtn) {
-    geoBtn.onclick = getMyLocation;
 }
 
 // ========== МОДАЛКИ ==========
@@ -285,15 +253,9 @@ var driverForm = document.getElementById('driverLoginForm');
 if (driverForm) {
     driverForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        var login = document.getElementById('driverLogin').value;
-        var password = document.getElementById('driverPassword').value;
-        
-        if (login === 'driver' && password === '12345') {
-            localStorage.setItem('driverLoggedIn', 'true');
-            window.location.href = '/driver-dashboard';
-        } else {
-            alert('Неверный логин или пароль');
-        }
+        // ВРЕМЕННО: любой логин и пароль подходят
+        localStorage.setItem('driverLoggedIn', 'true');
+        window.location.href = '/driver-dashboard';
     });
 }
 
@@ -420,7 +382,7 @@ if (userId) {
     }
 }
 
-// ========== ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ HTML ==========
+// Делаем функции глобальными
 window.openOrderModal = openOrderModal;
 window.closeOrderModal = closeOrderModal;
 window.openCommentModal = openCommentModal;
