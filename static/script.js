@@ -21,14 +21,34 @@ function initMap() {
 }
 initMap();
 
-// ========== ПОИСК ==========
+// ========== ПОИСК АДРЕСА ==========
 function searchAddress() {
     var query = document.getElementById('addressSearch').value;
-    if (!query) return;
+    if (!query) {
+        alert('Введите адрес для поиска');
+        return;
+    }
+    
+    if (typeof map === 'undefined' || map === null) {
+        alert('Карта ещё не загружена, попробуйте через секунду');
+        return;
+    }
+    
     ymaps.geocode(query, { results: 1 }).then(function(res) {
-        var coords = res.geoObjects.get(0).geometry.getCoordinates();
-        map.setCenter(coords, 15);
-    }).catch(function() { alert('Адрес не найден'); });
+        var firstGeoObject = res.geoObjects.get(0);
+        if (firstGeoObject) {
+            var coords = firstGeoObject.geometry.getCoordinates();
+            map.setCenter(coords, 15);
+            if (window.searchMarker) map.geoObjects.remove(window.searchMarker);
+            window.searchMarker = new ymaps.Placemark(coords);
+            map.geoObjects.add(window.searchMarker);
+        } else {
+            alert('Адрес не найден');
+        }
+    }).catch(function(err) {
+        console.error('Ошибка геокодирования:', err);
+        alert('Ошибка при поиске адреса');
+    });
 }
 
 function getMyLocation() {
@@ -253,9 +273,15 @@ var driverForm = document.getElementById('driverLoginForm');
 if (driverForm) {
     driverForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        // ВРЕМЕННО: любой логин и пароль подходят
-        localStorage.setItem('driverLoggedIn', 'true');
-        window.location.href = '/driver-dashboard';
+        var login = document.getElementById('driverLogin').value;
+        var password = document.getElementById('driverPassword').value;
+        
+        if (login === 'driver' && password === '12345') {
+            localStorage.setItem('driverLoggedIn', 'true');
+            window.location.href = '/driver-dashboard';
+        } else {
+            alert('Неверный логин или пароль');
+        }
     });
 }
 
@@ -382,7 +408,7 @@ if (userId) {
     }
 }
 
-// Делаем функции глобальными
+// ========== ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ HTML ==========
 window.openOrderModal = openOrderModal;
 window.closeOrderModal = closeOrderModal;
 window.openCommentModal = openCommentModal;
