@@ -10,7 +10,9 @@ function initMap() {
         map = new ymaps.Map('map', {
             center: [55.751244, 37.618423],
             zoom: 12,
-            controls: ['zoomControl']
+            controls: ['zoomControl', 'searchControl']
+        }, {
+            searchControlProvider: 'yandex#search'
         });
         map.events.add('click', function(e) {
             var coords = e.get('coords');
@@ -20,16 +22,6 @@ function initMap() {
     });
 }
 initMap();
-
-// ========== ПОИСК ==========
-function searchAddress() {
-    var query = document.getElementById('addressSearch').value;
-    if (!query) return;
-    ymaps.geocode(query, { results: 1 }).then(function(res) {
-        var coords = res.geoObjects.get(0).geometry.getCoordinates();
-        map.setCenter(coords, 15);
-    }).catch(function() { alert('Адрес не найден'); });
-}
 
 function getMyLocation() {
     if (navigator.geolocation) {
@@ -253,7 +245,6 @@ var driverForm = document.getElementById('driverLoginForm');
 if (driverForm) {
     driverForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        // ВРЕМЕННО: любой логин и пароль подходят
         localStorage.setItem('driverLoggedIn', 'true');
         window.location.href = '/driver-dashboard';
     });
@@ -398,33 +389,5 @@ window.sendComment = sendComment;
 window.registerUser = registerUser;
 window.loginUser = loginUser;
 window.logout = logout;
-window.searchAddress = searchAddress;
 window.getMyLocation = getMyLocation;
 window.closeAllModals = closeAllModals;
-
-// ===== НЕЗАВИСИМАЯ КНОПКА ПОИСКА (OpenStreetMap) =====
-document.getElementById('searchButton').onclick = function() {
-    var query = document.getElementById('addressSearch').value;
-    if (!query) {
-        alert('Введите адрес');
-        return;
-    }
-    fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=1')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            if (data.length > 0) {
-                var lat = parseFloat(data[0].lat);
-                var lon = parseFloat(data[0].lon);
-                if (window.map) {
-                    window.map.setCenter([lat, lon], 15);
-                } else {
-                    alert('Карта не загружена');
-                }
-            } else {
-                alert('Адрес не найден');
-            }
-        })
-        .catch(function() {
-            alert('Ошибка поиска');
-        });
-};
