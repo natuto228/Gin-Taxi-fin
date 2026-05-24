@@ -401,31 +401,30 @@ window.logout = logout;
 window.searchAddress = searchAddress;
 window.getMyLocation = getMyLocation;
 window.closeAllModals = closeAllModals;
-// ===== НЕЗАВИСИМАЯ КНОПКА ПОИСКА =====
-document.addEventListener('DOMContentLoaded', function() {
-    var btn = document.getElementById('searchBtn');
-    if (btn) {
-        btn.onclick = function() {
-            var query = document.getElementById('addressSearch').value;
-            if (!query) {
-                alert('Введите адрес');
-                return;
-            }
-            if (window.map) {
-                window.ymaps.geocode(query, { results: 1 }).then(function(res) {
-                    var obj = res.geoObjects.get(0);
-                    if (obj) {
-                        var coords = obj.geometry.getCoordinates();
-                        window.map.setCenter(coords, 15);
-                    } else {
-                        alert('Адрес не найден');
-                    }
-                }).catch(function() {
-                    alert('Ошибка поиска');
-                });
-            } else {
-                alert('Карта не загружена');
-            }
-        };
+
+// ===== НЕЗАВИСИМАЯ КНОПКА ПОИСКА (OpenStreetMap) =====
+document.getElementById('searchButton').onclick = function() {
+    var query = document.getElementById('addressSearch').value;
+    if (!query) {
+        alert('Введите адрес');
+        return;
     }
-});
+    fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=1')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.length > 0) {
+                var lat = parseFloat(data[0].lat);
+                var lon = parseFloat(data[0].lon);
+                if (window.map) {
+                    window.map.setCenter([lat, lon], 15);
+                } else {
+                    alert('Карта не загружена');
+                }
+            } else {
+                alert('Адрес не найден');
+            }
+        })
+        .catch(function() {
+            alert('Ошибка поиска');
+        });
+};

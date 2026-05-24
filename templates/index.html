@@ -11,8 +11,6 @@
 <body>
 
 <div class="page-container">
-    
-    <button id="searchBtn" style="position: absolute; top: 10px; right: 10px; z-index: 1000; background: #87CEFA; border: none; padding: 8px 16px; border-radius: 20px; color: white;"> Найти</button>
 
     <header class="header">
         <div class="logo">Gin Taxi</div>
@@ -46,7 +44,8 @@
         
         <div class="map-area">
             <div class="search-block">
-              <input type="text" id="addressSearch" placeholder="Поиск адреса">
+                <input type="text" id="addressSearch" placeholder="Поиск адреса">
+                <button id="searchButton">Найти</button>
             </div>
             <button class="geo-btn" onclick="getMyLocation()">📍</button>
             <div id="map"></div>
