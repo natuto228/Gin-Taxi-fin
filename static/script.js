@@ -144,14 +144,19 @@ function calculatePrice() {
 }
 
 async function submitOrder() {
+    let tariff = document.getElementById('orderTariff').value;
+    let price = 250;
+    if (tariff === 'Комфорт') price = 350;
+    if (tariff === 'Бизнес') price = 500;
+    
     let fd = new FormData();
     fd.append('pickup', document.getElementById('orderPickup').value);
     fd.append('dropoff', document.getElementById('orderDropoff').value);
-    fd.append('tariff', document.getElementById('orderTariff').value);
-    fd.append('price', 250);
+    fd.append('tariff', tariff);
+    fd.append('price', price);
     if (userId) fd.append('user_id', userId);
     await fetch('/save-order', { method: 'POST', body: fd });
-    alert('Заказ оформлен');
+    alert('Заказ оформлен на сумму ' + price + ' ₽');
     closeOrderModal();
 }
 
@@ -164,15 +169,34 @@ function initMap() {
     ymaps.ready(function() {
         map = new ymaps.Map('map', {
             center: [55.751244, 37.618423],
-            zoom: 12
+            zoom: 12,
+            controls: ['zoomControl', 'fullscreenControl', 'searchControl']
+        }, {
+            searchControlProvider: 'yandex#search'
+        });
+        
+        var geolocationControl = new ymaps.control.GeolocationControl({
+            options: { float: 'right' }
+        });
+        map.controls.add(geolocationControl);
+        
+        map.events.add('click', function(e) {
+            var coords = e.get('coords');
+            var pickupInput = document.getElementById('orderPickup');
+            if (pickupInput) pickupInput.value = coords[0].toFixed(4) + ', ' + coords[1].toFixed(4);
         });
     });
 }
 initMap();
 
+// ОБРАБОТЧИКИ
 document.getElementById('orderTariff')?.addEventListener('change', calculatePrice);
+document.getElementById('orderPickup')?.addEventListener('input', calculatePrice);
+document.getElementById('orderDropoff')?.addEventListener('input', calculatePrice);
+
 updateHeader();
 
+// ГЛОБАЛЬНЫЕ ФУНКЦИИ
 window.openOrderModal = openOrderModal;
 window.closeOrderModal = closeOrderModal;
 window.openCommentModal = openCommentModal;
