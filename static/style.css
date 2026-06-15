@@ -350,3 +350,22 @@ body {
         border-radius: 8px;
     }
 }
+.header {
+    background: #87CEFA;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+}
+
+.user-status a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+}

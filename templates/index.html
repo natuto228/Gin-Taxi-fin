@@ -12,9 +12,13 @@
 
 <div class="page-container">
 
+    <!-- ===== ШАПКА С id="userStatus" ===== -->
     <header class="header">
         <div class="logo">Gin Taxi</div>
-        <div id="userStatus" class="user-status"></div>
+        <div class="user-status" id="userStatus">
+            <a href="#" onclick="showLoginModal()">Войти</a>
+            <a href="#" onclick="showRegisterModal()">Регистрация</a>
+        </div>
     </header>
     
     <div class="main-content">
@@ -51,6 +55,7 @@
     
 </div>
 
+<!-- МОДАЛЬНЫЕ ОКНА -->
 <div id="orderModal" class="modal">
     <h3>Заказ такси</h3>
     <input type="text" id="orderName" placeholder="ФИО">
