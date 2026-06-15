@@ -4,10 +4,13 @@ let userName = localStorage.getItem('userName');
 function updateHeader() {
     let container = document.getElementById('userStatus');
     if (!container) return;
-    if (userId && userName) {
-        container.innerHTML = '<a href="#" onclick="showProfileModal()">' + userName + '</a> <a href="#" onclick="logout()">Выйти</a>';
+    let storedUserId = localStorage.getItem('userId');
+    let storedUserName = localStorage.getItem('userName');
+    
+    if (storedUserId && storedUserName) {
+        container.innerHTML = '<a href="#" onclick="showProfileModal()">' + storedUserName + '</a> <a href="#" onclick="logout()">Выйти</a>';
     } else {
-        container.innerHTML = '<a href="#" onclick="showLoginModal()">Вход</a> <a href="#" onclick="showRegisterModal()">Регистрация</a>';
+        container.innerHTML = '<a href="#" onclick="showLoginModal()">Войти</a> <a href="#" onclick="showRegisterModal()">Регистрация</a>';
     }
 }
 
@@ -49,6 +52,7 @@ function closeAllModals() {
 
 function logout() {
     localStorage.clear();
+    updateHeader();
     location.reload();
 }
 
@@ -61,10 +65,8 @@ async function loginUser() {
     if (data.success) {
         localStorage.setItem('userId', data.user_id);
         localStorage.setItem('userName', data.fullname);
-        userId = data.user_id;
-        userName = data.fullname;
-        alert('Добро пожаловать, ' + data.fullname);
         updateHeader();
+        alert('Добро пожаловать, ' + data.fullname);
         closeLoginModal();
     } else {
         alert(data.error);
@@ -194,6 +196,7 @@ document.getElementById('orderTariff')?.addEventListener('change', calculatePric
 document.getElementById('orderPickup')?.addEventListener('input', calculatePrice);
 document.getElementById('orderDropoff')?.addEventListener('input', calculatePrice);
 
+// ЗАПУСКАЕМ ОБНОВЛЕНИЕ ШАПКИ
 updateHeader();
 
 // ГЛОБАЛЬНЫЕ ФУНКЦИИ
