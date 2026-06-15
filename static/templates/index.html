@@ -15,6 +15,8 @@
     <header class="header">
         <div class="logo">Gin Taxi</div>
         <div class="user-status" id="userStatus">
+            <a href="#" onclick="showLoginModal()">Войти</a>
+            <a href="#" onclick="showRegisterModal()">Регистрация</a>
         </div>
     </header>
     
@@ -52,6 +54,7 @@
     
 </div>
 
+<!-- МОДАЛЬНЫЕ ОКНА -->
 <div id="orderModal" class="modal">
     <h3>Заказ такси</h3>
     <input type="text" id="orderName" placeholder="ФИО">
@@ -93,6 +96,14 @@
     <button onclick="registerUser()">Зарегистрироваться</button>
     <button onclick="closeRegisterModal()" class="btn-gray">Отмена</button>
     <div class="modal-link"><a href="#" onclick="closeRegisterModal(); showLoginModal();">Уже есть аккаунт? Войти</a></div>
+</div>
+
+<div id="profileModal" class="modal" style="width:450px;">
+    <h3>Мой профиль</h3>
+    <div id="profileInfo"></div>
+    <div id="ordersHistory"></div>
+    <button onclick="logout()" class="logout-red">Выйти</button>
+    <button onclick="closeProfileModal()" class="btn-gray">Закрыть</button>
 </div>
 
 <div id="overlay" class="overlay" onclick="closeAllModals()"></div>

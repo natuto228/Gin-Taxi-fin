@@ -1,9 +1,183 @@
-// ========== ПЕРЕМЕННЫЕ ==========
-let map;
-let userId = localStorage.getItem('userId');
-let userName = localStorage.getItem('userName');
+var map;
+var userId = localStorage.getItem('userId');
+var userName = localStorage.getItem('userName');
+var userEmail = localStorage.getItem('userEmail');
+var dropdownOpen = false;
 
-// ========== КАРТА С ПОИСКОМ ==========
+function initHeader() {
+    var userStatus = document.getElementById('userStatus');
+    if (!userStatus) return;
+    
+    if (userId && userName) {
+        var firstLetter = userName.charAt(0).toUpperCase();
+        
+        userStatus.innerHTML = `
+            <div class="user-dropdown">
+                <div class="user-avatar" onclick="toggleDropdown()">
+                    <div class="avatar-circle">${firstLetter}</div>
+                    <div class="user-info-header">
+                        <div class="user-name-header">${userName}</div>
+                        <div class="user-role-header">Пассажир</div>
+                    </div>
+                </div>
+                <div id="userDropdown" class="dropdown-menu-custom" style="display: none;">
+                    <div class="dropdown-header-custom">
+                        <div><strong>${userName}</strong></div>
+                        <div class="dropdown-email">${userEmail || 'user@gin.ru'}</div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item-custom" onclick="showModernProfile()">
+                        Личный кабинет
+                    </div>
+                    <div class="dropdown-item-custom" onclick="showOrderHistory()">
+                        История заказов
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item-custom logout-item" onclick="logout()">
+                        Выйти
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        userStatus.innerHTML = `
+            <div class="auth-buttons">
+                <a href="#" class="btn-outline-auth" onclick="showLoginModal(); return false;">Вход</a>
+                <a href="#" class="btn-primary-auth" onclick="showRegisterModal(); return false;">Регистрация</a>
+            </div>
+        `;
+    }
+}
+
+function toggleDropdown() {
+    var dropdown = document.getElementById('userDropdown');
+    if (!dropdown) return;
+    
+    dropdownOpen = !dropdownOpen;
+    dropdown.style.display = dropdownOpen ? 'block' : 'none';
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.user-dropdown')) {
+        var dropdown = document.getElementById('userDropdown');
+        if (dropdown) {
+            dropdown.style.display = 'none';
+            dropdownOpen = false;
+        }
+    }
+});
+
+function showModernProfile() {
+    closeAllModals();
+    var userId = localStorage.getItem('userId');
+    if (!userId) {
+        showLoginModal();
+        return;
+    }
+    
+    var existingModal = document.getElementById('modernProfileModal');
+    if (existingModal) existingModal.remove();
+    
+    var modal = document.createElement('div');
+    modal.id = 'modernProfileModal';
+    modal.className = 'profile-modal-modern';
+    modal.innerHTML = `
+        <div class="profile-header-modern">
+            <div class="profile-avatar-modern" id="profileAvatarModal">${(localStorage.getItem('userName') || 'U').charAt(0).toUpperCase()}</div>
+            <div class="profile-name-modern" id="profileNameModal">${localStorage.getItem('userName') || 'Пользователь'}</div>
+            <div class="profile-role-modern">Пассажир</div>
+        </div>
+        <div class="profile-stats-modern">
+            <div class="stat-item-modern">
+                <div class="stat-number-modern" id="totalOrdersModal">0</div>
+                <div class="stat-label-modern">Поездок</div>
+            </div>
+            <div class="stat-item-modern">
+                <div class="stat-number-modern" id="totalSpentModal">0</div>
+                <div class="stat-label-modern">Потрачено RUB</div>
+            </div>
+        </div>
+        <div class="profile-body-modern">
+            <div class="orders-title-modern">
+                История заказов
+            </div>
+            <div id="profileOrdersList" class="profile-orders-list">
+                <div class="empty-orders">Загрузка...</div>
+            </div>
+        </div>
+        <div class="profile-footer-modern">
+            <button class="btn-logout-modern" onclick="logout()">Выйти из аккаунта</button>
+            <button class="btn-close-modern" onclick="closeModernProfile()">Закрыть</button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'block';
+    showOverlay();
+    
+    loadUserOrdersToProfile(userId);
+}
+
+function closeModernProfile() {
+    var modal = document.getElementById('modernProfileModal');
+    if (modal) modal.remove();
+    hideOverlay();
+}
+
+async function loadUserOrdersToProfile(userId) {
+    try {
+        var res = await fetch('/user-orders/' + userId);
+        var orders = await res.json();
+        
+        var container = document.getElementById('profileOrdersList');
+        var totalSpan = document.getElementById('totalOrdersModal');
+        var spentSpan = document.getElementById('totalSpentModal');
+        
+        if (!container) return;
+        
+        if (orders.length === 0) {
+            container.innerHTML = '<div class="empty-orders">У вас пока нет заказов</div>';
+            if (totalSpan) totalSpan.innerText = '0';
+            if (spentSpan) spentSpan.innerText = '0';
+            return;
+        }
+        
+        var totalOrders = orders.length;
+        var totalSpent = orders.reduce(function(sum, o) { return sum + (parseFloat(o.price) || 0); }, 0);
+        
+        if (totalSpan) totalSpan.innerText = totalOrders;
+        if (spentSpan) spentSpan.innerText = totalSpent;
+        
+        var html = '';
+        for (var i = 0; i < orders.length; i++) {
+            var order = orders[i];
+            var statusClass = '';
+            if (order.status === 'Новый') statusClass = 'status-new';
+            else if (order.status === 'В пути') statusClass = 'status-progress';
+            else statusClass = 'status-completed';
+            
+            html += `
+                <div class="order-card-modern">
+                    <div class="order-route-modern">${order.pickup || 'Не указан'} → ${order.dropoff || 'Не указан'}</div>
+                    <div class="order-details-modern">
+                        <span>${order.price || 0} RUB</span>
+                        <span>${order.tariff || 'Эконом'}</span>
+                        <span>${new Date(order.date).toLocaleDateString()}</span>
+                        <span class="order-status-modern ${statusClass}">${order.status || 'Новый'}</span>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Ошибка загрузки заказов:', error);
+    }
+}
+
+function showOrderHistory() {
+    showModernProfile();
+}
+
 function initMap() {
     if (typeof ymaps === 'undefined') {
         setTimeout(initMap, 500);
@@ -14,44 +188,27 @@ function initMap() {
             center: [55.751244, 37.618423],
             zoom: 12,
             controls: ['zoomControl', 'fullscreenControl', 'searchControl']
-        }, {
-            searchControlProvider: 'yandex#search'
         });
-        
-        map.events.add('click', function(e) {
-            let coords = e.get('coords');
-            let pickup = document.getElementById('orderPickup');
-            if (pickup) pickup.value = coords[0].toFixed(4) + ', ' + coords[1].toFixed(4);
-        });
-        
         console.log('Карта загружена');
     });
 }
 initMap();
 
-// ========== ГЕОЛОКАЦИЯ ==========
-function getMyLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(pos) {
-            map.setCenter([pos.coords.latitude, pos.coords.longitude], 15);
-        }, function() { alert('Не удалось определить местоположение'); });
-    } else {
-        alert('Геолокация не поддерживается');
-    }
-}
-
-// ========== МОДАЛКИ ==========
 function showOverlay() { 
-    let el = document.getElementById('overlay');
+    var el = document.getElementById('overlay');
     if (el) el.style.display = 'block';
 }
 function hideOverlay() { 
-    let el = document.getElementById('overlay');
+    var el = document.getElementById('overlay');
     if (el) el.style.display = 'none';
 }
 function closeAllModals() { 
     hideOverlay(); 
-    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    var modals = document.querySelectorAll('.modal');
+    for (var i = 0; i < modals.length; i++) {
+        modals[i].style.display = 'none';
+    }
+    closeModernProfile();
 }
 
 function openOrderModal() { 
@@ -86,35 +243,25 @@ function closeRegisterModal() {
     document.getElementById('registerModal').style.display = 'none';
     hideOverlay();
 }
-function showProfileModal() { 
-    document.getElementById('profileModal').style.display = 'block';
-    showOverlay();
-    loadProfile();
-}
-function closeProfileModal() { 
-    document.getElementById('profileModal').style.display = 'none';
-    hideOverlay();
-}
-
 function makePhoneCall() { 
     window.location.href = 'tel:+78121234567';
 }
 
 function calculatePrice() {
-    let pickup = document.getElementById('orderPickup');
-    let dropoff = document.getElementById('orderDropoff');
-    let tariff = document.getElementById('orderTariff');
-    let priceDiv = document.getElementById('pricePreview');
+    var pickup = document.getElementById('orderPickup');
+    var dropoff = document.getElementById('orderDropoff');
+    var tariff = document.getElementById('orderTariff');
+    var priceDiv = document.getElementById('pricePreview');
     if (pickup && dropoff && tariff && priceDiv && pickup.value && dropoff.value) {
-        let price = 250;
+        var price = 250;
         if (tariff.value.includes('Комфорт')) price = 350;
         if (tariff.value.includes('Бизнес')) price = 500;
-        priceDiv.innerHTML = 'Примерная стоимость: ' + price + ' ₽';
+        priceDiv.innerHTML = 'Примерная стоимость: ' + price + ' RUB';
     }
 }
 
 function sendComment() {
-    let comment = document.getElementById('driverComment');
+    var comment = document.getElementById('driverComment');
     if (comment && comment.value) {
         alert('Комментарий: ' + comment.value);
         comment.value = '';
@@ -126,27 +273,31 @@ function sendComment() {
 
 function logout() {
     localStorage.clear();
+    userId = null;
+    userName = null;
+    userEmail = null;
+    initHeader();
+    closeAllModals();
     location.reload();
 }
 
-// ========== ЗАКАЗ ==========
 async function submitOrder() {
-    let name = document.getElementById('orderName');
-    let phone = document.getElementById('orderPhone');
-    let pickup = document.getElementById('orderPickup');
-    let dropoff = document.getElementById('orderDropoff');
-    let tariff = document.getElementById('orderTariff');
+    var name = document.getElementById('orderName');
+    var phone = document.getElementById('orderPhone');
+    var pickup = document.getElementById('orderPickup');
+    var dropoff = document.getElementById('orderDropoff');
+    var tariff = document.getElementById('orderTariff');
     
     if (!name.value || !phone.value || !pickup.value || !dropoff.value) {
         alert('Заполните все поля');
         return;
     }
     
-    let price = 250;
+    var price = 250;
     if (tariff.value.includes('Комфорт')) price = 350;
     if (tariff.value.includes('Бизнес')) price = 500;
     
-    let fd = new FormData();
+    var fd = new FormData();
     fd.append('pickup', pickup.value);
     fd.append('dropoff', dropoff.value);
     fd.append('tariff', tariff.value);
@@ -165,16 +316,15 @@ async function submitOrder() {
     closeOrderModal();
 }
 
-// ========== РЕГИСТРАЦИЯ ==========
 async function registerUser() {
-    let fd = new FormData();
+    var fd = new FormData();
     fd.append('fullname', document.getElementById('regName').value);
     fd.append('phone', document.getElementById('regPhone').value);
     fd.append('email', document.getElementById('regEmail').value);
     fd.append('password', document.getElementById('regPassword').value);
     
-    let res = await fetch('/register', { method: 'POST', body: fd });
-    let data = await res.json();
+    var res = await fetch('/register', { method: 'POST', body: fd });
+    var data = await res.json();
     
     if (data.success) {
         alert('Регистрация успешна! Теперь войдите.');
@@ -185,154 +335,146 @@ async function registerUser() {
     }
 }
 
-// ========== ВХОД ПОЛЬЗОВАТЕЛЯ ==========
 async function loginUser() {
-    let fd = new FormData();
+    var fd = new FormData();
     fd.append('email', document.getElementById('loginEmail').value);
     fd.append('password', document.getElementById('loginPassword').value);
     
-    let res = await fetch('/login-user', { method: 'POST', body: fd });
-    let data = await res.json();
+    var res = await fetch('/login-user', { method: 'POST', body: fd });
+    var data = await res.json();
     
     if (data.success) {
         localStorage.setItem('userId', data.user_id);
         localStorage.setItem('userName', data.fullname);
+        localStorage.setItem('userEmail', data.email);
+        userId = data.user_id;
+        userName = data.fullname;
+        userEmail = data.email;
         alert('Добро пожаловать, ' + data.fullname);
+        initHeader();
+        closeLoginModal();
         location.reload();
     } else {
         alert(data.error);
     }
 }
 
-// ========== ПРОФИЛЬ ==========
-async function loadProfile() {
-    let id = localStorage.getItem('userId');
-    if (!id) return;
-    
-    let res = await fetch('/user-orders/' + id);
-    let orders = await res.json();
-    
-    let profileInfo = document.getElementById('profileInfo');
-    let ordersHistory = document.getElementById('ordersHistory');
-    
-    if (profileInfo) profileInfo.innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p><hr>';
-    
-    if (orders.length === 0) {
-        if (ordersHistory) ordersHistory.innerHTML = '<p>У вас пока нет заказов</p>';
-    } else {
-        let html = '<h4>История заказов</h4>';
-        orders.forEach(o => {
-            html += '<div class="order-card"><strong>' + o.pickup + '</strong> → <strong>' + o.dropoff + '</strong><br>' +
-                    o.tariff + ' | ' + o.price + ' ₽<br>' +
-                    'Статус: ' + o.status + '<br>' +
-                    '<small>' + new Date(o.date).toLocaleString() + '</small></div>';
-        });
-        if (ordersHistory) ordersHistory.innerHTML = html;
-    }
-}
-
-// ========== ВХОД ВОДИТЕЛЯ ==========
-let driverForm = document.getElementById('driverLoginForm');
-if (driverForm) {
-    driverForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        localStorage.setItem('driverLoggedIn', 'true');
-        window.location.href = '/driver-dashboard';
-    });
-}
-
-// ========== КАБИНЕТ ВОДИТЕЛЯ ==========
 if (window.location.pathname === '/driver-dashboard') {
     if (!localStorage.getItem('driverLoggedIn')) window.location.href = '/login';
     
-    let statusBtn = document.getElementById('statusBtn');
-    let isOnline = true;
-    if (statusBtn) {
-        statusBtn.onclick = () => {
-            isOnline = !isOnline;
-            statusBtn.textContent = isOnline ? 'Онлайн' : 'Офлайн';
-            statusBtn.className = isOnline ? 'driver-status-btn online' : 'driver-status-btn offline';
-        };
+    async function initDriverDashboard() {
+        var statusBtn = document.getElementById('statusToggle');
+        var isOnline = true;
+        
+        if (statusBtn) {
+            statusBtn.addEventListener('change', function() {
+                isOnline = this.checked;
+                var statusText = document.getElementById('statusText');
+                var statusIndicator = document.getElementById('statusIndicator');
+                if (statusText) statusText.textContent = isOnline ? 'Онлайн' : 'Офлайн';
+                if (statusIndicator) {
+                    statusIndicator.className = 'status-indicator ' + (isOnline ? 'online' : 'offline');
+                }
+            });
+        }
+        
+        await loadDriverOrders();
+        await loadDriverHistory();
+        
+        setInterval(loadDriverOrders, 5000);
     }
     
-    async function loadOrders() {
-        let res = await fetch('/user-orders/all');
-        let orders = await res.json();
-        let container = document.getElementById('ordersList');
+    async function loadDriverOrders() {
+        var res = await fetch('/user-orders/all');
+        var orders = await res.json();
+        var container = document.getElementById('newOrdersList');
         if (!container) return;
+        
         if (orders.length === 0) {
-            container.innerHTML = '<div class="driver-no-orders">Нет новых заказов</div>';
+            container.innerHTML = '<div class="empty-state-modern">Новых заказов пока нет</div>';
             return;
         }
-        let html = '';
-        orders.forEach(order => {
-            html += '<div class="order-item"><div><strong>' + order.pickup + '</strong> → <strong>' + order.dropoff + '</strong></div>' +
-                    '<div>Тариф: ' + order.tariff + ' | Цена: ' + order.price + ' ₽</div>' +
-                    '<button class="order-accept-btn" data-id="' + order.id + '">Принять</button></div>';
-        });
+        
+        var html = '';
+        for (var i = 0; i < orders.length; i++) {
+            var order = orders[i];
+            html += `
+                <div class="order-item-modern">
+                    <div class="order-route">${order.pickup} → ${order.dropoff}</div>
+                    <div class="order-meta">
+                        <span>${order.tariff}</span>
+                        <span>${order.price} RUB</span>
+                    </div>
+                    <button class="accept-btn-modern" data-id="${order.id}">Принять заказ</button>
+                </div>
+            `;
+        }
         container.innerHTML = html;
-        document.querySelectorAll('.order-accept-btn').forEach(btn => {
+        
+        var buttons = document.querySelectorAll('.accept-btn-modern');
+        for (var j = 0; j < buttons.length; j++) {
+            var btn = buttons[j];
             btn.onclick = async function() {
-                let fd = new FormData();
+                var fd = new FormData();
                 fd.append('driver_id', 1);
                 await fetch('/assign-order/' + this.dataset.id, { method: 'POST', body: fd });
                 alert('Заказ принят!');
-                loadOrders();
-                loadHistory();
+                loadDriverOrders();
+                loadDriverHistory();
             };
-        });
+        }
     }
     
-    async function loadHistory() {
-        let res = await fetch('/driver-orders/1');
-        let orders = await res.json();
-        let container = document.getElementById('historyList');
+    async function loadDriverHistory() {
+        var res = await fetch('/driver-orders/1');
+        var orders = await res.json();
+        var container = document.getElementById('historyList');
         if (!container) return;
+        
         if (orders.length === 0) {
-            container.innerHTML = '<div class="driver-no-orders">Нет выполненных заказов</div>';
+            container.innerHTML = '<div class="empty-state-modern">Нет выполненных заказов</div>';
             return;
         }
-        let html = '';
-        orders.forEach(order => {
-            html += '<div class="order-item"><div><strong>' + order.pickup_address + '</strong> → <strong>' + order.dropoff_address + '</strong></div>' +
-                    '<div>Тариф: ' + order.tariff + ' | Цена: ' + order.price + ' ₽</div>' +
-                    '<div>Статус: ' + order.status + '</div>' +
-                    '<div><small>' + new Date(order.created_at).toLocaleString() + '</small></div></div>';
-        });
+        
+        var html = '';
+        var totalEarned = 0;
+        for (var i = 0; i < orders.length; i++) {
+            var order = orders[i];
+            totalEarned += parseFloat(order.price) || 0;
+            html += `
+                <div class="order-item-modern">
+                    <div class="order-route">${order.pickup_address} → ${order.dropoff_address}</div>
+                    <div class="order-meta">
+                        <span>${order.price} RUB</span>
+                        <span>${new Date(order.created_at).toLocaleDateString()}</span>
+                        <span>${order.status}</span>
+                    </div>
+                </div>
+            `;
+        }
         container.innerHTML = html;
+        
+        var earningsSpan = document.getElementById('driverEarnings');
+        if (earningsSpan) earningsSpan.innerText = totalEarned.toLocaleString() + ' RUB';
     }
     
-    loadOrders();
-    loadHistory();
-    setInterval(loadOrders, 5000);
+    initDriverDashboard();
 }
 
-// ========== ФОРМЫ ==========
-let loginUserForm = document.getElementById('loginUserForm');
-if (loginUserForm) loginUserForm.addEventListener('submit', (e) => { e.preventDefault(); loginUser(); });
-let registerForm = document.getElementById('registerForm');
-if (registerForm) registerForm.addEventListener('submit', (e) => { e.preventDefault(); registerUser(); });
+var loginUserForm = document.getElementById('loginUserForm');
+if (loginUserForm) loginUserForm.addEventListener('submit', function(e) { e.preventDefault(); loginUser(); });
+var registerForm = document.getElementById('registerForm');
+if (registerForm) registerForm.addEventListener('submit', function(e) { e.preventDefault(); registerUser(); });
 
-// ========== КНОПКИ НА ГЛАВНОЙ ==========
-document.getElementById('orderBtn').onclick = openOrderModal;
-document.getElementById('phoneOrderBtn').onclick = makePhoneCall;
-document.getElementById('commentBtn').onclick = openCommentModal;
-document.getElementById('driverLoginBtn').onclick = () => window.location.href = '/login';
-document.getElementById('submitOrderBtn').onclick = submitOrder;
-document.getElementById('sendCommentBtn').onclick = sendComment;
-document.getElementById('orderPickup').addEventListener('input', calculatePrice);
-document.getElementById('orderDropoff').addEventListener('input', calculatePrice);
-document.getElementById('orderTariff').addEventListener('change', calculatePrice);
+var pickupInput = document.getElementById('orderPickup');
+var dropoffInput = document.getElementById('orderDropoff');
+var tariffSelect = document.getElementById('orderTariff');
+if (pickupInput) pickupInput.addEventListener('input', calculatePrice);
+if (dropoffInput) dropoffInput.addEventListener('input', calculatePrice);
+if (tariffSelect) tariffSelect.addEventListener('change', calculatePrice);
 
-// ШАПКА
-if (userId) {
-    let userStatus = document.getElementById('userStatus');
-    if (userStatus) {
-        userStatus.innerHTML = '<a href="#" onclick="showProfileModal()">' + userName + '</a> <a href="#" onclick="logout()">Выйти</a>';
-    }
-}
+document.addEventListener('DOMContentLoaded', initHeader);
 
-// ГЛОБАЛЬНЫЕ ФУНКЦИИ
 window.openOrderModal = openOrderModal;
 window.closeOrderModal = closeOrderModal;
 window.openCommentModal = openCommentModal;
@@ -341,12 +483,14 @@ window.showLoginModal = showLoginModal;
 window.closeLoginModal = closeLoginModal;
 window.showRegisterModal = showRegisterModal;
 window.closeRegisterModal = closeRegisterModal;
-window.closeProfileModal = closeProfileModal;
 window.makePhoneCall = makePhoneCall;
 window.submitOrder = submitOrder;
 window.sendComment = sendComment;
 window.registerUser = registerUser;
 window.loginUser = loginUser;
 window.logout = logout;
-window.getMyLocation = getMyLocation;
 window.closeAllModals = closeAllModals;
+window.showModernProfile = showModernProfile;
+window.closeModernProfile = closeModernProfile;
+window.showOrderHistory = showOrderHistory;
+window.toggleDropdown = toggleDropdown;

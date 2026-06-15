@@ -9,41 +9,54 @@
 </head>
 <body>
 
-<nav class="navbar navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-dark bg-dark mb-4" style="background: linear-gradient(135deg, #2c3e50 0%, #1a2a3a 100%) !important;">
     <div class="container">
-        <a class="navbar-brand" href="/">Gin</a>
+        <a class="navbar-brand" href="/" style="font-weight: 700;">Gin Taxi</a>
         <a href="/" class="btn btn-outline-light btn-sm" onclick="localStorage.removeItem('driverLoggedIn')">Выйти</a>
     </div>
 </nav>
 
-<div class="driver-container">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="driver-stats">
-                <div class="driver-avatar">D</div>
-                <h4 class="driver-title">Водитель</h4>
-                <button id="statusBtn" class="driver-status-btn online">Онлайн</button>
-                <hr>
-                <h3 id="earnings">0 ₽</h3>
-                <p class="driver-subtitle">Заработано сегодня</p>
+<div class="driver-container-modern">
+    <div class="driver-header-modern">
+        <div class="driver-info-modern">
+            <div class="driver-avatar-modern">D</div>
+            <div>
+                <div class="driver-name-modern">Водитель</div>
+                <div class="driver-car-modern">Toyota Camry A123BC</div>
             </div>
         </div>
-        
+        <div class="status-toggle-modern">
+            <span id="statusText" style="font-size: 14px;">Онлайн</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="statusToggle" checked>
+                <span class="toggle-slider"></span>
+            </label>
+            <div id="statusIndicator" class="status-indicator online"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="earnings-card-modern">
+                <div class="earnings-amount" id="driverEarnings">0 RUB</div>
+                <div class="earnings-label">Заработано сегодня</div>
+            </div>
+        </div>
         <div class="col-md-8">
-            <div class="driver-stats">
-                <h5 class="driver-orders-title">Новые заказы</h5>
-                <div id="ordersList"></div>
+            <div class="section-card-modern">
+                <div class="section-title-modern">
+                    Новые заказы
+                </div>
+                <div id="newOrdersList"></div>
             </div>
         </div>
     </div>
-    
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="driver-stats">
-                <h5 class="driver-orders-title">История выполненных заказов</h5>
-                <div id="historyList"></div>
-            </div>
+
+    <div class="section-card-modern">
+        <div class="section-title-modern">
+            История выполненных заказов
         </div>
+        <div id="historyList"></div>
     </div>
 </div>
 
