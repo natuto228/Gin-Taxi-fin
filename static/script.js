@@ -1,61 +1,17 @@
-let map;
 let userId = localStorage.getItem('userId');
 let userName = localStorage.getItem('userName');
-let userEmail = localStorage.getItem('userEmail');
-let dropdownOpen = false;
 
-function initHeader() {
-    let userStatus = document.getElementById('userStatus');
-    if (!userStatus) return;
-    
+function updateHeader() {
+    let container = document.getElementById('userStatus');
+    if (!container) return;
     if (userId && userName) {
-        let firstLetter = userName.charAt(0).toUpperCase();
-        userStatus.innerHTML = `
-            <div class="user-dropdown" style="position:relative">
-                <div class="user-avatar" onclick="toggleMenu()">
-                    <div class="avatar-circle">${firstLetter}</div>
-                    <div class="user-info-header">
-                        <div class="user-name-header">${userName}</div>
-                        <div class="user-role-header">Пассажир</div>
-                    </div>
-                </div>
-                <div id="userMenu" class="dropdown-menu-custom" style="display:none;">
-                    <div class="dropdown-header-custom">
-                        <div><strong>${userName}</strong></div>
-                        <div class="dropdown-email">${userEmail || 'user@gin.ru'}</div>
-                    </div>
-                    <div class="dropdown-divider"></div>
-                    <div class="dropdown-item-custom" onclick="showProfileModal()">Личный кабинет</div>
-                    <div class="dropdown-divider"></div>
-                    <div class="dropdown-item-custom logout-item" onclick="logout()">Выйти</div>
-                </div>
-            </div>
-        `;
+        container.innerHTML = '<a href="#" onclick="showProfileModal()">' + userName + '</a> <a href="#" onclick="logout()">Выйти</a>';
     } else {
-        userStatus.innerHTML = `
-            <div class="auth-buttons">
-                <a href="#" class="btn-outline-auth" onclick="showLoginModal(); return false;">Вход</a>
-                <a href="#" class="btn-primary-auth" onclick="showRegisterModal(); return false;">Регистрация</a>
-            </div>
-        `;
+        container.innerHTML = '<a href="#" onclick="showLoginModal()">Вход</a> <a href="#" onclick="showRegisterModal()">Регистрация</a>';
     }
 }
 
-function toggleMenu() {
-    let menu = document.getElementById('userMenu');
-    if (menu) {
-        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-    }
-}
-
-document.addEventListener('click', function(e) {
-    let menu = document.getElementById('userMenu');
-    let avatar = e.target.closest('.user-avatar');
-    if (menu && !avatar) {
-        menu.style.display = 'none';
-    }
-});
-
+let map;
 function initMap() {
     if (typeof ymaps === 'undefined') {
         setTimeout(initMap, 500);
@@ -84,8 +40,7 @@ function closeAllModals() {
     document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
 }
 function closeProfileModal() {
-    let modal = document.getElementById('profileModal');
-    if (modal) modal.style.display = 'none';
+    document.getElementById('profileModal').style.display = 'none';
     hideOverlay();
 }
 
@@ -122,12 +77,9 @@ function closeRegisterModal() {
     hideOverlay();
 }
 function showProfileModal() { 
-    let modal = document.getElementById('profileModal');
-    if (modal) {
-        modal.style.display = 'block';
-        showOverlay();
-        loadProfile();
-    }
+    document.getElementById('profileModal').style.display = 'block';
+    showOverlay();
+    loadProfile();
 }
 
 function makePhoneCall() { 
@@ -228,12 +180,10 @@ async function loginUser() {
     if (data.success) {
         localStorage.setItem('userId', data.user_id);
         localStorage.setItem('userName', data.fullname);
-        localStorage.setItem('userEmail', data.email);
         userId = data.user_id;
         userName = data.fullname;
-        userEmail = data.email;
         alert('Добро пожаловать, ' + data.fullname);
-        initHeader();
+        updateHeader();
         closeLoginModal();
     } else {
         alert(data.error);
@@ -335,8 +285,7 @@ if (window.location.pathname === '/driver-dashboard') {
                     '<div><small>' + new Date(order.created_at).toLocaleString() + '</small></div></div>';
         });
         container.innerHTML = html;
-        let earningsSpan = document.getElementById('earnings');
-        if (earningsSpan) earningsSpan.innerText = total + ' ₽';
+        document.getElementById('earnings').innerText = total + ' ₽';
     }
     
     loadOrders();
@@ -349,14 +298,11 @@ if (loginUserForm) loginUserForm.addEventListener('submit', (e) => { e.preventDe
 let registerForm = document.getElementById('registerForm');
 if (registerForm) registerForm.addEventListener('submit', (e) => { e.preventDefault(); registerUser(); });
 
-let pickupInput = document.getElementById('orderPickup');
-let dropoffInput = document.getElementById('orderDropoff');
-let tariffSelect = document.getElementById('orderTariff');
-if (pickupInput) pickupInput.addEventListener('input', calculatePrice);
-if (dropoffInput) dropoffInput.addEventListener('input', calculatePrice);
-if (tariffSelect) tariffSelect.addEventListener('change', calculatePrice);
+document.getElementById('orderPickup')?.addEventListener('input', calculatePrice);
+document.getElementById('orderDropoff')?.addEventListener('input', calculatePrice);
+document.getElementById('orderTariff')?.addEventListener('change', calculatePrice);
 
-document.addEventListener('DOMContentLoaded', initHeader);
+updateHeader();
 
 window.openOrderModal = openOrderModal;
 window.closeOrderModal = closeOrderModal;
@@ -374,4 +320,3 @@ window.registerUser = registerUser;
 window.loginUser = loginUser;
 window.logout = logout;
 window.closeAllModals = closeAllModals;
-window.toggleMenu = toggleMenu;
