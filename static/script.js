@@ -1,6 +1,9 @@
+// ========== ПЕРЕМЕННЫЕ ==========
 let userId = localStorage.getItem('userId');
 let userName = localStorage.getItem('userName');
+let map;
 
+// ========== ШАПКА ==========
 function updateHeader() {
     let container = document.getElementById('userStatus');
     if (!container) return;
@@ -14,6 +17,7 @@ function updateHeader() {
     }
 }
 
+// ========== МОДАЛЬНЫЕ ОКНА ==========
 function showLoginModal() {
     document.getElementById('loginModal').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
@@ -50,12 +54,65 @@ function closeAllModals() {
     document.getElementById('overlay').style.display = 'none';
 }
 
-function logout() {
-    localStorage.clear();
-    updateHeader();
-    location.reload();
+function openOrderModal() {
+    document.getElementById('orderModal').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
 }
 
+function closeOrderModal() {
+    document.getElementById('orderModal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+function openCommentModal() {
+    document.getElementById('commentModal').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+}
+
+function closeCommentModal() {
+    document.getElementById('commentModal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+// ========== ФУНКЦИИ КНОПОК ==========
+function makePhoneCall() {
+    window.location.href = 'tel:+78121234567';
+}
+
+function sendComment() {
+    let comment = document.getElementById('driverComment');
+    alert('Комментарий: ' + comment.value);
+    closeCommentModal();
+}
+
+// ========== РАСЧЁТ ЦЕНЫ ==========
+function calculatePrice() {
+    let tariff = document.getElementById('orderTariff').value;
+    let price = 250;
+    if (tariff === 'Комфорт') price = 350;
+    if (tariff === 'Бизнес') price = 500;
+    document.getElementById('pricePreview').innerHTML = 'Стоимость: ' + price + ' руб';
+}
+
+// ========== ЗАКАЗ ==========
+async function submitOrder() {
+    let tariff = document.getElementById('orderTariff').value;
+    let price = 250;
+    if (tariff === 'Комфорт') price = 350;
+    if (tariff === 'Бизнес') price = 500;
+    
+    let fd = new FormData();
+    fd.append('pickup', document.getElementById('orderPickup').value);
+    fd.append('dropoff', document.getElementById('orderDropoff').value);
+    fd.append('tariff', tariff);
+    fd.append('price', price);
+    if (userId) fd.append('user_id', userId);
+    await fetch('/save-order', { method: 'POST', body: fd });
+    alert('Заказ оформлен на сумму ' + price + ' ₽');
+    closeOrderModal();
+}
+
+// ========== ВХОД И РЕГИСТРАЦИЯ ==========
 async function loginUser() {
     let fd = new FormData();
     fd.append('email', document.getElementById('loginEmail').value);
@@ -65,6 +122,8 @@ async function loginUser() {
     if (data.success) {
         localStorage.setItem('userId', data.user_id);
         localStorage.setItem('userName', data.fullname);
+        userId = data.user_id;
+        userName = data.fullname;
         updateHeader();
         alert('Добро пожаловать, ' + data.fullname);
         closeLoginModal();
@@ -90,6 +149,13 @@ async function registerUser() {
     }
 }
 
+function logout() {
+    localStorage.clear();
+    updateHeader();
+    location.reload();
+}
+
+// ========== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ==========
 async function loadProfile() {
     let id = localStorage.getItem('userId');
     if (!id) return;
@@ -107,62 +173,7 @@ async function loadProfile() {
     }
 }
 
-function openOrderModal() {
-    document.getElementById('orderModal').style.display = 'block';
-    document.getElementById('overlay').style.display = 'block';
-}
-
-function closeOrderModal() {
-    document.getElementById('orderModal').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-}
-
-function openCommentModal() {
-    document.getElementById('commentModal').style.display = 'block';
-    document.getElementById('overlay').style.display = 'block';
-}
-
-function closeCommentModal() {
-    document.getElementById('commentModal').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-}
-
-function sendComment() {
-    let comment = document.getElementById('driverComment');
-    alert('Комментарий: ' + comment.value);
-    closeCommentModal();
-}
-
-function makePhoneCall() {
-    window.location.href = 'tel:+78121234567';
-}
-
-function calculatePrice() {
-    let tariff = document.getElementById('orderTariff').value;
-    let price = 250;
-    if (tariff === 'Комфорт') price = 350;
-    if (tariff === 'Бизнес') price = 500;
-    document.getElementById('pricePreview').innerHTML = 'Стоимость: ' + price + ' руб';
-}
-
-async function submitOrder() {
-    let tariff = document.getElementById('orderTariff').value;
-    let price = 250;
-    if (tariff === 'Комфорт') price = 350;
-    if (tariff === 'Бизнес') price = 500;
-    
-    let fd = new FormData();
-    fd.append('pickup', document.getElementById('orderPickup').value);
-    fd.append('dropoff', document.getElementById('orderDropoff').value);
-    fd.append('tariff', tariff);
-    fd.append('price', price);
-    if (userId) fd.append('user_id', userId);
-    await fetch('/save-order', { method: 'POST', body: fd });
-    alert('Заказ оформлен на сумму ' + price + ' ₽');
-    closeOrderModal();
-}
-
-let map;
+// ========== КАРТА (БЕЗ ВСТРОЕННОГО ПОИСКА) ==========
 function initMap() {
     if (typeof ymaps === 'undefined') {
         setTimeout(initMap, 500);
@@ -172,9 +183,7 @@ function initMap() {
         map = new ymaps.Map('map', {
             center: [55.751244, 37.618423],
             zoom: 12,
-            controls: ['zoomControl', 'fullscreenControl', 'searchControl']
-        }, {
-            searchControlProvider: 'yandex#search'
+            controls: ['zoomControl', 'fullscreenControl']
         });
         
         var geolocationControl = new ymaps.control.GeolocationControl({
@@ -191,15 +200,15 @@ function initMap() {
 }
 initMap();
 
-// ОБРАБОТЧИКИ
+// ========== ОБРАБОТЧИКИ СОБЫТИЙ ==========
 document.getElementById('orderTariff')?.addEventListener('change', calculatePrice);
 document.getElementById('orderPickup')?.addEventListener('input', calculatePrice);
 document.getElementById('orderDropoff')?.addEventListener('input', calculatePrice);
 
-// ЗАПУСКАЕМ ОБНОВЛЕНИЕ ШАПКИ
+// ========== ЗАПУСК ОБНОВЛЕНИЯ ШАПКИ ==========
 updateHeader();
 
-// ГЛОБАЛЬНЫЕ ФУНКЦИИ
+// ========== ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ HTML ==========
 window.openOrderModal = openOrderModal;
 window.closeOrderModal = closeOrderModal;
 window.openCommentModal = openCommentModal;
@@ -216,3 +225,4 @@ window.registerUser = registerUser;
 window.loginUser = loginUser;
 window.logout = logout;
 window.closeAllModals = closeAllModals;
+window.calculatePrice = calculatePrice;
