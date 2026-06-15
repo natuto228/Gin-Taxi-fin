@@ -2,23 +2,32 @@ let map;
 let userId = localStorage.getItem('userId');
 let userName = localStorage.getItem('userName');
 let userEmail = localStorage.getItem('userEmail');
+let dropdownOpen = false;
 
 function initHeader() {
     let userStatus = document.getElementById('userStatus');
     if (!userStatus) return;
     
     if (userId && userName) {
-        let letter = userName.charAt(0).toUpperCase();
+        let firstLetter = userName.charAt(0).toUpperCase();
         userStatus.innerHTML = `
-            <div style="position:relative">
+            <div class="user-dropdown" style="position:relative">
                 <div class="user-avatar" onclick="toggleMenu()">
-                    <div class="avatar-circle">${letter}</div>
-                    <span class="user-name-header">${userName}</span>
+                    <div class="avatar-circle">${firstLetter}</div>
+                    <div class="user-info-header">
+                        <div class="user-name-header">${userName}</div>
+                        <div class="user-role-header">Пассажир</div>
+                    </div>
                 </div>
-                <div id="userMenu" style="display:none; position:absolute; right:0; top:45px; background:white; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); min-width:160px; z-index:1000">
-                    <div style="padding:10px 15px; border-bottom:1px solid #eee">${userEmail || ''}</div>
-                    <div onclick="showProfileModal()" style="padding:10px 15px; cursor:pointer; hover:background:#f0f2f5">Личный кабинет</div>
-                    <div onclick="logout()" style="padding:10px 15px; cursor:pointer; color:red">Выйти</div>
+                <div id="userMenu" class="dropdown-menu-custom" style="display:none;">
+                    <div class="dropdown-header-custom">
+                        <div><strong>${userName}</strong></div>
+                        <div class="dropdown-email">${userEmail || 'user@gin.ru'}</div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item-custom" onclick="showProfileModal()">Личный кабинет</div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item-custom logout-item" onclick="logout()">Выйти</div>
                 </div>
             </div>
         `;
@@ -34,13 +43,16 @@ function initHeader() {
 
 function toggleMenu() {
     let menu = document.getElementById('userMenu');
-    if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    if (menu) {
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
 }
 
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('.user-avatar')) {
-        let menu = document.getElementById('userMenu');
-        if (menu) menu.style.display = 'none';
+    let menu = document.getElementById('userMenu');
+    let avatar = e.target.closest('.user-avatar');
+    if (menu && !avatar) {
+        menu.style.display = 'none';
     }
 });
 
@@ -72,7 +84,8 @@ function closeAllModals() {
     document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
 }
 function closeProfileModal() {
-    document.getElementById('profileModal').style.display = 'none';
+    let modal = document.getElementById('profileModal');
+    if (modal) modal.style.display = 'none';
     hideOverlay();
 }
 
@@ -109,9 +122,12 @@ function closeRegisterModal() {
     hideOverlay();
 }
 function showProfileModal() { 
-    document.getElementById('profileModal').style.display = 'block';
-    showOverlay();
-    loadProfile();
+    let modal = document.getElementById('profileModal');
+    if (modal) {
+        modal.style.display = 'block';
+        showOverlay();
+        loadProfile();
+    }
 }
 
 function makePhoneCall() { 
@@ -213,8 +229,12 @@ async function loginUser() {
         localStorage.setItem('userId', data.user_id);
         localStorage.setItem('userName', data.fullname);
         localStorage.setItem('userEmail', data.email);
+        userId = data.user_id;
+        userName = data.fullname;
+        userEmail = data.email;
         alert('Добро пожаловать, ' + data.fullname);
-        location.reload();
+        initHeader();
+        closeLoginModal();
     } else {
         alert(data.error);
     }
@@ -315,7 +335,8 @@ if (window.location.pathname === '/driver-dashboard') {
                     '<div><small>' + new Date(order.created_at).toLocaleString() + '</small></div></div>';
         });
         container.innerHTML = html;
-        document.getElementById('earnings').innerText = total + ' ₽';
+        let earningsSpan = document.getElementById('earnings');
+        if (earningsSpan) earningsSpan.innerText = total + ' ₽';
     }
     
     loadOrders();
@@ -328,9 +349,12 @@ if (loginUserForm) loginUserForm.addEventListener('submit', (e) => { e.preventDe
 let registerForm = document.getElementById('registerForm');
 if (registerForm) registerForm.addEventListener('submit', (e) => { e.preventDefault(); registerUser(); });
 
-document.getElementById('orderPickup')?.addEventListener('input', calculatePrice);
-document.getElementById('orderDropoff')?.addEventListener('input', calculatePrice);
-document.getElementById('orderTariff')?.addEventListener('change', calculatePrice);
+let pickupInput = document.getElementById('orderPickup');
+let dropoffInput = document.getElementById('orderDropoff');
+let tariffSelect = document.getElementById('orderTariff');
+if (pickupInput) pickupInput.addEventListener('input', calculatePrice);
+if (dropoffInput) dropoffInput.addEventListener('input', calculatePrice);
+if (tariffSelect) tariffSelect.addEventListener('change', calculatePrice);
 
 document.addEventListener('DOMContentLoaded', initHeader);
 
