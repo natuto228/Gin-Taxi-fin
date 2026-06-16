@@ -51,12 +51,16 @@ def init_database():
         )
     ''')
     
-    # ДОБАВЛЯЕМ КОЛОНКУ driver_id, ЕСЛИ ЕЁ НЕТ
+    # ДОБАВЛЯЕМ ВСЕ НУЖНЫЕ КОЛОНКИ, ЕСЛИ ИХ НЕТ
     try:
         cursor.execute('ALTER TABLE orders ADD COLUMN driver_id INTEGER')
-        print("Колонка driver_id добавлена")
-    except Exception as e:
-        print(f"Колонка driver_id уже существует или ошибка: {e}")
+    except Exception:
+        pass
+    
+    try:
+        cursor.execute('ALTER TABLE orders ADD COLUMN status TEXT DEFAULT \'Новый\'')
+    except Exception:
+        pass
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS applications (
@@ -186,6 +190,7 @@ async def get_user_orders(user_id: int):
 async def get_all_orders():
     conn = get_db()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
+    # УБРАНО УСЛОВИЕ WHERE status = 'Новый', чтобы видеть все заказы
     cursor.execute('''
         SELECT id, pickup_address, dropoff_address, tariff, price, status
         FROM orders ORDER BY created_at DESC
