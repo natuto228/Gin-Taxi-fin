@@ -1,3 +1,8 @@
+/* ========================================
+   GIN TAXI - ПОЛНЫЙ CSS
+   ======================================== */
+
+/* ---------- ОБЩИЕ СТИЛИ ---------- */
 * {
     margin: 0;
     padding: 0;
@@ -17,23 +22,23 @@ body {
     min-height: 100vh;
 }
 
+/* ---------- ШАПКА ---------- */
 .header {
-    background: white;
+    background: #87CEFA;
     padding: 15px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
 }
 
 .logo {
     font-size: 22px;
     font-weight: bold;
-    color: #87CEFA;
+    color: white;
 }
 
 .user-status a {
-    color: black;
+    color: white;
     text-decoration: none;
     margin-left: 20px;
     font-size: 13px;
@@ -46,13 +51,13 @@ body {
     cursor: pointer;
     padding: 5px 12px;
     border-radius: 30px;
-    background: #f0f2f5;
+    background: rgba(255,255,255,0.2);
 }
 
 .avatar-circle {
     width: 32px;
     height: 32px;
-    background: #87CEFA;
+    background: rgba(255,255,255,0.3);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -64,6 +69,7 @@ body {
 .user-name-header {
     font-size: 13px;
     font-weight: 600;
+    color: white;
 }
 
 .dropdown-menu-custom {
@@ -94,21 +100,32 @@ body {
 .btn-outline-auth {
     padding: 6px 16px;
     border-radius: 20px;
-    border: 1px solid #ccc;
+    border: 1px solid rgba(255,255,255,0.5);
     text-decoration: none;
-    color: #333;
+    color: white;
     font-size: 13px;
+    background: transparent;
+}
+
+.btn-outline-auth:hover {
+    background: rgba(255,255,255,0.1);
 }
 
 .btn-primary-auth {
     padding: 6px 20px;
     border-radius: 20px;
-    background: #87CEFA;
-    color: white;
+    background: white;
+    color: #87CEFA;
     text-decoration: none;
     font-size: 13px;
+    font-weight: 600;
 }
 
+.btn-primary-auth:hover {
+    background: #f0f8ff;
+}
+
+/* ---------- ОСНОВНОЙ КОНТЕНТ ---------- */
 .main-content {
     display: flex;
     flex: 1;
@@ -140,14 +157,23 @@ body {
 .logo-card p {
     margin-top: 10px;
     font-size: 14px;
+    color: #87CEFA;
+    font-weight: bold;
 }
 
+/* ---------- КНОПКИ ---------- */
 .btn-action {
     background: #87CEFA;
     border-radius: 8px;
     padding: 12px;
     text-align: center;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-action:hover {
+    background: #6bb5e0;
+    transform: translateX(5px);
 }
 
 .btn-action h3 {
@@ -165,6 +191,12 @@ body {
     cursor: pointer;
     width: calc(100% + 20px);
     margin-top: auto;
+    transition: all 0.2s;
+}
+
+.btn-driver:hover {
+    background: #6bb5e0;
+    transform: translateX(5px);
 }
 
 .btn-driver h3 {
@@ -178,6 +210,7 @@ body {
     color: rgba(255,255,255,0.8);
 }
 
+/* ---------- КАРТА ---------- */
 .map-area {
     flex: 1;
 }
@@ -188,6 +221,7 @@ body {
     border-radius: 12px;
 }
 
+/* ---------- ПОДВАЛ ---------- */
 .footer {
     background: white;
     border-top: 1px solid #eee;
@@ -197,6 +231,7 @@ body {
     color: #999;
 }
 
+/* ---------- МОДАЛЬНЫЕ ОКНА ---------- */
 .modal {
     display: none;
     position: fixed;
@@ -226,6 +261,12 @@ body {
     margin: 8px 0;
     border: 1px solid #ddd;
     border-radius: 6px;
+    font-size: 13px;
+}
+
+.modal input:focus, .modal select:focus, .modal textarea:focus {
+    outline: none;
+    border-color: #87CEFA;
 }
 
 .modal button {
@@ -237,11 +278,21 @@ body {
     cursor: pointer;
     width: 100%;
     margin-top: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.modal button:hover {
+    background: #6bb5e0;
 }
 
 .modal .btn-gray {
     background: #e0e0e0;
     color: black;
+}
+
+.modal .btn-gray:hover {
+    background: #ccc;
 }
 
 .modal-link {
@@ -266,6 +317,31 @@ body {
     z-index: 999;
 }
 
+/* ---------- ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ---------- */
+.order-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 3px solid #87CEFA;
+}
+
+.logout-red {
+    background: #dc3545;
+}
+
+.logout-red:hover {
+    background: #c82333;
+}
+
+#pricePreview {
+    margin: 8px 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: #87CEFA;
+}
+
+/* ---------- КАБИНЕТ ВОДИТЕЛЯ ---------- */
 .driver-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -277,6 +353,7 @@ body {
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    text-align: center;
 }
 
 .driver-avatar {
@@ -289,7 +366,7 @@ body {
     justify-content: center;
     font-size: 24px;
     color: white;
-    margin-bottom: 15px;
+    margin: 0 auto 15px;
 }
 
 .driver-status-btn {
@@ -297,6 +374,7 @@ body {
     border-radius: 30px;
     border: none;
     cursor: pointer;
+    font-weight: 600;
 }
 
 .driver-status-btn.online {
@@ -326,17 +404,141 @@ body {
     margin-top: 8px;
 }
 
-#pricePreview {
-    margin: 8px 0;
+.order-accept-btn:hover {
+    background: #6bb5e0;
+}
+
+/* ---------- СТРАНИЦА ВХОДА ВОДИТЕЛЯ ---------- */
+.login-body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #e6f0fa 0%, #d4e4f7 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    margin: 0;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+}
+
+.login-box {
+    background: white;
+    border-radius: 24px;
+    padding: 40px 35px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.login-box:hover {
+    transform: translateY(-2px);
+}
+
+.login-icon {
+    width: 70px;
+    height: 70px;
+    background: #87CEFA;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 32px;
+    color: white;
+}
+
+.login-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.login-subtitle {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-bottom: 25px;
+}
+
+.login-divider {
+    height: 2px;
+    background: #ecf0f1;
+    margin-bottom: 30px;
+    width: 80px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.login-button {
+    width: 100%;
+    padding: 14px 20px;
+    background: #87CEFA;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(135, 206, 250, 0.3);
+}
+
+.login-button:hover {
+    background: #6bb5e0;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(135, 206, 250, 0.4);
+}
+
+.login-button:active {
+    transform: translateY(0);
+}
+
+.login-footer {
+    margin-top: 25px;
+}
+
+.test-badge {
+    display: inline-block;
+    background: #f1c40f;
+    color: #2c3e50;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.test-hint {
     font-size: 12px;
-    font-weight: bold;
+    color: #95a5a6;
+    margin-top: 10px;
+}
+
+.login-back {
+    margin-top: 20px;
+}
+
+.login-back a {
+    color: #7f8c8d;
+    font-size: 13px;
+    transition: color 0.2s;
+}
+
+.login-back a:hover {
     color: #87CEFA;
 }
 
-.logout-red {
-    background: #dc3545;
-}
-
+/* ---------- АДАПТАЦИЯ ---------- */
 @media (max-width: 768px) {
     .main-content {
         flex-direction: column;
@@ -350,22 +552,15 @@ body {
         border-radius: 8px;
     }
 }
-.header {
-    background: #87CEFA;
-    padding: 15px 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
-.logo {
-    font-size: 22px;
-    font-weight: bold;
-    color: white;
-}
-
-.user-status a {
-    color: white;
-    text-decoration: none;
-    margin-left: 20px;
+@media (max-width: 480px) {
+    .login-box {
+        padding: 30px 20px;
+    }
+    .login-title {
+        font-size: 22px;
+    }
+    .modal {
+        width: 95%;
+    }
 }
