@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gin Taxi</title>
-    <link href="https://fonts.cdnfonts.com/css/southghetto" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
 </head>
@@ -12,11 +12,11 @@
 
 <div class="page-container">
 
-    <!-- ШАПКА -->
     <header class="header">
         <div class="logo">Gin Taxi</div>
         <div class="user-status" id="userStatus">
-            <!-- Сюда JS вставит кнопки -->
+            <a href="#" onclick="showLoginModal()">Войти</a>
+            <a href="#" onclick="showRegisterModal()">Регистрация</a>
         </div>
     </header>
     
@@ -30,7 +30,7 @@
             <div class="btn-action" onclick="makePhoneCall()">
                 <h3>Заказ по телефону</h3>
             </div>
-            <div class="btn-action" onclick="openOrderModal()">
+            <div class="btn-action" id="orderBtn" onclick="openOrderModal()">
                 <h3>Выбрать тариф</h3>
             </div>
             <div class="btn-action" onclick="openCommentModal()">
@@ -54,42 +54,7 @@
     
 </div>
 
-<!-- ===== МОДАЛЬНОЕ ОКНО ВХОДА ===== -->
-<div id="loginModal" class="modal">
-    <h3>Вход пользователя</h3>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPassword" placeholder="Пароль">
-    <button onclick="loginUser()">Войти</button>
-    <button onclick="closeLoginModal()" class="btn-gray">Отмена</button>
-    <div class="modal-link">
-        <a href="#" onclick="closeLoginModal(); showRegisterModal();">Нет аккаунта? Регистрация</a>
-    </div>
-</div>
-
-<!-- ===== МОДАЛЬНОЕ ОКНО РЕГИСТРАЦИИ ===== -->
-<div id="registerModal" class="modal">
-    <h3>Регистрация</h3>
-    <input type="text" id="regName" placeholder="ФИО">
-    <input type="tel" id="regPhone" placeholder="Телефон">
-    <input type="email" id="regEmail" placeholder="Email">
-    <input type="password" id="regPassword" placeholder="Пароль">
-    <button onclick="registerUser()">Зарегистрироваться</button>
-    <button onclick="closeRegisterModal()" class="btn-gray">Отмена</button>
-    <div class="modal-link">
-        <a href="#" onclick="closeRegisterModal(); showLoginModal();">Уже есть аккаунт? Войти</a>
-    </div>
-</div>
-
-<!-- ===== МОДАЛЬНОЕ ОКНО ПРОФИЛЯ ===== -->
-<div id="profileModal" class="modal" style="width:450px;">
-    <h3>Мой профиль</h3>
-    <div id="profileInfo"></div>
-    <div id="ordersHistory"></div>
-    <button onclick="logout()" class="logout-red">Выйти</button>
-    <button onclick="closeProfileModal()" class="btn-gray">Закрыть</button>
-</div>
-
-<!-- ===== ОСТАЛЬНЫЕ МОДАЛКИ ===== -->
+<!-- Модальные окна -->
 <div id="orderModal" class="modal">
     <h3>Заказ такси</h3>
     <input type="text" id="orderName" placeholder="ФИО">
@@ -111,6 +76,34 @@
     <textarea id="driverComment" rows="3" placeholder="Ваши пожелания..."></textarea>
     <button onclick="sendComment()">Отправить</button>
     <button onclick="closeCommentModal()" class="btn-gray">Отмена</button>
+</div>
+
+<div id="loginModal" class="modal">
+    <h3>Вход пользователя</h3>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Пароль">
+    <button onclick="loginUser()">Войти</button>
+    <button onclick="closeLoginModal()" class="btn-gray">Отмена</button>
+    <div class="modal-link"><a href="#" onclick="closeLoginModal(); showRegisterModal();">Нет аккаунта? Регистрация</a></div>
+</div>
+
+<div id="registerModal" class="modal">
+    <h3>Регистрация</h3>
+    <input type="text" id="regName" placeholder="ФИО">
+    <input type="tel" id="regPhone" placeholder="Телефон">
+    <input type="email" id="regEmail" placeholder="Email">
+    <input type="password" id="regPassword" placeholder="Пароль">
+    <button onclick="registerUser()">Зарегистрироваться</button>
+    <button onclick="closeRegisterModal()" class="btn-gray">Отмена</button>
+    <div class="modal-link"><a href="#" onclick="closeRegisterModal(); showLoginModal();">Уже есть аккаунт? Войти</a></div>
+</div>
+
+<div id="profileModal" class="modal" style="width:450px;">
+    <h3>Мой профиль</h3>
+    <div id="profileInfo"></div>
+    <div id="ordersHistory"></div>
+    <button onclick="logout()" class="logout-red">Выйти</button>
+    <button onclick="closeProfileModal()" class="btn-gray">Закрыть</button>
 </div>
 
 <div id="overlay" class="overlay" onclick="closeAllModals()"></div>

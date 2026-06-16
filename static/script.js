@@ -1,7 +1,3 @@
-// ============================================
-// ПОЛНЫЙ JS
-// ============================================
-
 let userId = localStorage.getItem('userId');
 let userName = localStorage.getItem('userName');
 let map;
@@ -163,7 +159,6 @@ if (window.location.pathname === '/driver-dashboard') {
         window.location.href = '/login';
     }
 
-    // Онлайн/Офлайн
     let isOnline = true;
     const statusBtn = document.getElementById('statusBtn');
     if (statusBtn) {
@@ -174,7 +169,6 @@ if (window.location.pathname === '/driver-dashboard') {
         });
     }
 
-    // Загрузка заказов
     async function loadOrders() {
         try {
             const res = await fetch('/user-orders/all');
@@ -213,7 +207,6 @@ if (window.location.pathname === '/driver-dashboard') {
         }
     }
 
-    // Загрузка истории
     async function loadHistory() {
         try {
             const res = await fetch('/driver-orders/1');
