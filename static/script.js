@@ -3,19 +3,23 @@ let userId = localStorage.getItem('userId');
 let userName = localStorage.getItem('userName');
 let map;
 
-// ========== ШАПКА ==========
-function updateHeader() {
-    let container = document.getElementById('userStatus');
-    if (!container) return;
-    let storedUserId = localStorage.getItem('userId');
-    let storedUserName = localStorage.getItem('userName');
+// ========== ШАПКА (ОДНА КНОПКА) ==========
+function updateAuthButton() {
+    let link = document.getElementById('authLink');
+    if (!link) return;
     
-    if (storedUserId && storedUserName) {
-        container.innerHTML = '<a href="#" onclick="showProfileModal()">' + storedUserName + '</a> <a href="#" onclick="logout()">Выйти</a>';
+    let uId = localStorage.getItem('userId');
+    let uName = localStorage.getItem('userName');
+    
+    if (uId && uName) {
+        link.textContent = uName;
+        link.href = '/user-profile';
     } else {
-        container.innerHTML = '<a href="#" onclick="showLoginModal()">Войти</a> <a href="#" onclick="showRegisterModal()">Регистрация</a>';
+        link.textContent = 'Войти';
+        link.href = '/login-user';
     }
 }
+updateAuthButton();
 
 // ========== МОДАЛЬНЫЕ ОКНА ==========
 function showLoginModal() {
@@ -74,18 +78,22 @@ function closeCommentModal() {
     document.getElementById('overlay').style.display = 'none';
 }
 
-// ========== ФУНКЦИИ КНОПОК ==========
+// ========== ОБЩИЕ ФУНКЦИИ ==========
 function makePhoneCall() {
     window.location.href = 'tel:+78121234567';
 }
 
 function sendComment() {
     let comment = document.getElementById('driverComment');
-    alert('Комментарий: ' + comment.value);
-    closeCommentModal();
+    if (comment && comment.value) {
+        alert('Комментарий: ' + comment.value);
+        comment.value = '';
+        closeCommentModal();
+    } else {
+        alert('Введите комментарий');
+    }
 }
 
-// ========== РАСЧЁТ ЦЕНЫ ==========
 function calculatePrice() {
     let tariff = document.getElementById('orderTariff').value;
     let price = 250;
@@ -106,13 +114,16 @@ async function submitOrder() {
     fd.append('dropoff', document.getElementById('orderDropoff').value);
     fd.append('tariff', tariff);
     fd.append('price', price);
-    if (userId) fd.append('user_id', userId);
+    
+    let uId = localStorage.getItem('userId');
+    if (uId) fd.append('user_id', uId);
+    
     await fetch('/save-order', { method: 'POST', body: fd });
     alert('Заказ оформлен на сумму ' + price + ' ₽');
     closeOrderModal();
 }
 
-// ========== ВХОД И РЕГИСТРАЦИЯ ==========
+// ========== ВХОД ==========
 async function loginUser() {
     let fd = new FormData();
     fd.append('email', document.getElementById('loginEmail').value);
@@ -122,16 +133,16 @@ async function loginUser() {
     if (data.success) {
         localStorage.setItem('userId', data.user_id);
         localStorage.setItem('userName', data.fullname);
-        userId = data.user_id;
-        userName = data.fullname;
-        updateHeader();
+        updateAuthButton();
         alert('Добро пожаловать, ' + data.fullname);
         closeLoginModal();
+        window.location.href = '/user-profile';
     } else {
         alert(data.error);
     }
 }
 
+// ========== РЕГИСТРАЦИЯ ==========
 async function registerUser() {
     let fd = new FormData();
     fd.append('fullname', document.getElementById('regName').value);
@@ -149,31 +160,35 @@ async function registerUser() {
     }
 }
 
+// ========== ВЫХОД ==========
 function logout() {
     localStorage.clear();
-    updateHeader();
-    location.reload();
+    updateAuthButton();
+    window.location.href = '/';
 }
 
-// ========== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ==========
+// ========== ПРОФИЛЬ ==========
 async function loadProfile() {
     let id = localStorage.getItem('userId');
     if (!id) return;
     let res = await fetch('/user-orders/' + id);
     let orders = await res.json();
-    document.getElementById('profileInfo').innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p><hr>';
+    let info = document.getElementById('profileInfo');
+    let history = document.getElementById('ordersHistory');
+    
+    if (info) info.innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p><hr>';
     if (orders.length === 0) {
-        document.getElementById('ordersHistory').innerHTML = '<p>Нет заказов</p>';
+        if (history) history.innerHTML = '<p>Нет заказов</p>';
     } else {
         let html = '<h4>История заказов</h4>';
         orders.forEach(o => {
             html += '<div class="order-card"><strong>' + o.pickup + '</strong> → <strong>' + o.dropoff + '</strong><br>' + o.tariff + ' | ' + o.price + ' ₽<br>Статус: ' + o.status + '<br><small>' + new Date(o.date).toLocaleString() + '</small></div>';
         });
-        document.getElementById('ordersHistory').innerHTML = html;
+        if (history) history.innerHTML = html;
     }
 }
 
-// ========== КАРТА (БЕЗ ВСТРОЕННОГО ПОИСКА) ==========
+// ========== КАРТА ==========
 function initMap() {
     if (typeof ymaps === 'undefined') {
         setTimeout(initMap, 500);
@@ -186,27 +201,24 @@ function initMap() {
             controls: ['zoomControl', 'fullscreenControl']
         });
         
-        var geolocationControl = new ymaps.control.GeolocationControl({
+        let geolocationControl = new ymaps.control.GeolocationControl({
             options: { float: 'right' }
         });
         map.controls.add(geolocationControl);
         
         map.events.add('click', function(e) {
-            var coords = e.get('coords');
-            var pickupInput = document.getElementById('orderPickup');
+            let coords = e.get('coords');
+            let pickupInput = document.getElementById('orderPickup');
             if (pickupInput) pickupInput.value = coords[0].toFixed(4) + ', ' + coords[1].toFixed(4);
         });
     });
 }
 initMap();
 
-// ========== ОБРАБОТЧИКИ СОБЫТИЙ ==========
+// ========== ОБРАБОТЧИКИ ==========
 document.getElementById('orderTariff')?.addEventListener('change', calculatePrice);
 document.getElementById('orderPickup')?.addEventListener('input', calculatePrice);
 document.getElementById('orderDropoff')?.addEventListener('input', calculatePrice);
-
-// ========== ЗАПУСК ОБНОВЛЕНИЯ ШАПКИ ==========
-updateHeader();
 
 // ========== ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ HTML ==========
 window.openOrderModal = openOrderModal;
@@ -226,3 +238,4 @@ window.loginUser = loginUser;
 window.logout = logout;
 window.closeAllModals = closeAllModals;
 window.calculatePrice = calculatePrice;
+window.updateAuthButton = updateAuthButton;
