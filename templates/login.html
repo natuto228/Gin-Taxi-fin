@@ -17,22 +17,20 @@
         <h3 class="login-title">Вход водителя</h3>
     </div>
     
-    <form id="driverLoginForm">
-        <label class="login-label">Логин</label>
-        <input type="text" id="driverLogin" class="login-input" required>
-        
-        <label class="login-label">Пароль</label>
-        <input type="password" id="driverPassword" class="login-input" required>
-        
-        <button type="submit" class="login-btn">Войти</button>
-    </form>
+    <!-- ПРОСТАЯ КНОПКА БЕЗ ФОРМЫ -->
+    <button id="driverTestLogin" class="login-btn">Войти (тест)</button>
     
     <div class="login-test-info">
-        <span>Тест: driver / 12345</span>
+        <span>Тестовый вход (любой логин/пароль)</span>
     </div>
 </div>
 
-<script src="/static/script.js"></script>
+<script>
+    document.getElementById('driverTestLogin').onclick = function() {
+        localStorage.setItem('driverLoggedIn', 'true');
+        window.location.href = '/driver-dashboard';
+    };
+</script>
 
 </body>
 </html>
