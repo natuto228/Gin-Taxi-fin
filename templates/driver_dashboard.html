@@ -3,64 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кабинет водителя - Gin</title>
-    <link href="https://fonts.cdnfonts.com/css/southghetto" rel="stylesheet">
+    <title>Кабинет водителя - Gin Taxi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body class="driver-page">
 
-<nav class="navbar navbar-dark bg-dark mb-4" style="background: linear-gradient(135deg, #2c3e50 0%, #1a2a3a 100%) !important;">
-    <div class="container">
-        <a class="navbar-brand" href="/" style="font-weight: 700;">Gin Taxi</a>
-        <a href="/" class="btn btn-outline-light btn-sm" onclick="localStorage.removeItem('driverLoggedIn')">Выйти</a>
-    </div>
-</nav>
-
-<div class="driver-container-modern">
-    <div class="driver-header-modern">
-        <div class="driver-info-modern">
-            <div class="driver-avatar-modern">D</div>
-            <div>
-                <div class="driver-name-modern">Водитель</div>
-                <div class="driver-car-modern">Toyota Camry A123BC</div>
-            </div>
-        </div>
-        <div class="status-toggle-modern">
-            <span id="statusText" style="font-size: 14px;">Онлайн</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="statusToggle" checked>
-                <span class="toggle-slider"></span>
-            </label>
-            <div id="statusIndicator" class="status-indicator online"></div>
-        </div>
+    <div class="navbar-custom">
+        <a href="/" class="brand">Gin <span>Taxi</span></a>
+        <a href="/" class="logout-btn" onclick="localStorage.removeItem('driverLoggedIn')">Выйти</a>
     </div>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="earnings-card-modern">
-                <div class="earnings-amount" id="driverEarnings">0 RUB</div>
-                <div class="earnings-label">Заработано сегодня</div>
-            </div>
+    <div class="stats-grid">
+        <div class="stats-card">
+            <h3>Водитель</h3>
+            <p class="role-label">Gin Taxi</p>
+            <p class="car-info">Toyota Camry A123BC</p>
+            <button id="statusBtn" class="status-btn online">Онлайн</button>
+            <div class="earnings" id="earnings">0 ₽</div>
+            <div class="earnings-label">Заработано сегодня</div>
         </div>
-        <div class="col-md-8">
-            <div class="section-card-modern">
-                <div class="section-title-modern">
-                    Новые заказы
-                </div>
-                <div id="newOrdersList"></div>
+
+        <div class="orders-card">
+            <div class="card-title">Новые заказы</div>
+            <div id="ordersList">
+                <div class="no-orders">Загрузка...</div>
             </div>
         </div>
     </div>
 
-    <div class="section-card-modern">
-        <div class="section-title-modern">
-            История выполненных заказов
+    <div class="history-card">
+        <div class="card-title">История выполненных заказов</div>
+        <div id="historyList">
+            <div class="no-orders">Загрузка...</div>
         </div>
-        <div id="historyList"></div>
     </div>
-</div>
-
-<script src="/static/script.js"></script>
 
 </body>
 </html>
