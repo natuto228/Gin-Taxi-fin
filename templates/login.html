@@ -15,22 +15,24 @@
     <div class="text-center">
         <div class="login-logo-circle">D</div>
         <h3 class="login-title">Вход водителя</h3>
-        <p class="text-muted" style="font-size: 12px; margin-bottom: 20px;">Тестовый режим — любой логин и пароль</p>
     </div>
     
-    <button id="driverTestLogin" class="login-btn">Войти в кабинет</button>
+    <form id="driverLoginForm">
+        <label class="login-label">Логин</label>
+        <input type="text" id="driverLogin" class="login-input" required>
+        
+        <label class="login-label">Пароль</label>
+        <input type="password" id="driverPassword" class="login-input" required>
+        
+        <button type="submit" class="login-btn">Войти</button>
+    </form>
     
-    <div class="login-test-info" style="margin-top: 15px; font-size: 11px;">
-        <span>Тестовый вход (любые данные)</span>
+    <div class="login-test-info">
+        <span>Тест: driver / 12345</span>
     </div>
 </div>
 
-<script>
-    document.getElementById('driverTestLogin').onclick = function() {
-        localStorage.setItem('driverLoggedIn', 'true');
-        window.location.href = '/driver-dashboard';
-    };
-</script>
+<script src="/static/script.js"></script>
 
 </body>
 </html>
