@@ -215,25 +215,7 @@ function initMap() {
 }
 initMap();
 
-// ========== ВХОД ВОДИТЕЛЯ ==========
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('driverLoginForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault(); // ОСТАНАВЛИВАЕТ ПЕРЕЗАГРУЗКУ
-            
-            const login = document.getElementById('driverLogin').value;
-            const password = document.getElementById('driverPassword').value;
-            
-            if (login === 'driver' && password === '12345') {
-                localStorage.setItem('driverLoggedIn', 'true');
-                window.location.href = '/driver-dashboard';
-            } else {
-                alert('Неверный логин или пароль');
-            }
-        });
-    }
-});
+
 
 // ========== ОБРАБОТЧИКИ ==========
 document.getElementById('orderTariff')?.addEventListener('change', calculatePrice);
