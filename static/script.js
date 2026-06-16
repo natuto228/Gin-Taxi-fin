@@ -155,6 +155,12 @@ document.getElementById('orderDropoff')?.addEventListener('input', calculatePric
 
 // ===== ЛОГИКА ДЛЯ КАБИНЕТА ВОДИТЕЛЯ =====
 if (window.location.pathname === '/driver-dashboard') {
+    // Сохраняем авторизацию, если её нет
+    if (!localStorage.getItem('driverLoggedIn')) {
+        localStorage.setItem('driverLoggedIn', 'true');
+    }
+
+    // Проверка авторизации (если не сохранилось — редирект)
     if (!localStorage.getItem('driverLoggedIn')) {
         window.location.href = '/login';
     }
