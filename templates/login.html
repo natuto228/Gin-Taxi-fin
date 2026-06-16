@@ -3,34 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход водителя - Gin</title>
-    <link href="https://fonts.cdnfonts.com/css/southghetto" rel="stylesheet">
+    <title>Вход водителя - Gin Taxi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="login-body">
+<body class="login-page">
 
-<a href="/" class="header-back">← На главную</a>
-
-<div class="login-card">
-    <div class="text-center">
-        <div class="login-logo-circle">D</div>
-        <h3 class="login-title">Вход водителя</h3>
+    <div class="login-card">
+        <div class="login-icon">👨‍✈️</div>
+        <h1>Вход водителя</h1>
+        <p class="subtitle">Gin Taxi</p>
+        <div class="divider"></div>
+        <button class="login-btn" id="driverTestLogin">Войти в кабинет</button>
+        <div class="test-badge">⚡ Тестовый режим</div>
+        <div class="test-hint">Нажмите кнопку для входа</div>
+        <a href="/" class="back-link">← На главную</a>
     </div>
-    
-    <!-- ПРОСТАЯ КНОПКА БЕЗ ФОРМЫ -->
-    <button id="driverTestLogin" class="login-btn">Войти (тест)</button>
-    
-    <div class="login-test-info">
-        <span>Тестовый вход (любой логин/пароль)</span>
-    </div>
-</div>
 
-<script>
-    document.getElementById('driverTestLogin').onclick = function() {
-        localStorage.setItem('driverLoggedIn', 'true');
-        window.location.href = '/driver-dashboard';
-    };
-</script>
+    <script>
+        document.getElementById('driverTestLogin').addEventListener('click', function() {
+            localStorage.setItem('driverLoggedIn', 'true');
+            window.location.href = '/driver-dashboard';
+        });
+    </script>
 
 </body>
 </html>

@@ -180,6 +180,13 @@ body {
     font-size: 13px;
 }
 
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus {
+    outline: none;
+    border-color: #87CEFA;
+}
+
 .modal button {
     background: #87CEFA;
     border: none;
@@ -200,6 +207,10 @@ body {
 .modal .btn-gray {
     background: #e0e0e0;
     color: black;
+}
+
+.modal .btn-gray:hover {
+    background: #ccc;
 }
 
 .modal-link {
@@ -237,6 +248,10 @@ body {
     background: #dc3545;
 }
 
+.logout-red:hover {
+    background: #c82333;
+}
+
 #pricePreview {
     margin: 8px 0;
     font-size: 12px;
@@ -245,10 +260,9 @@ body {
 }
 
 /* ========================================
-   СТИЛИ ДЛЯ ВОДИТЕЛЯ
+   СТИЛИ ДЛЯ СТРАНИЦЫ ВХОДА ВОДИТЕЛЯ
    ======================================== */
 
-/* ----- СТРАНИЦА ВХОДА (login.html) ----- */
 .login-page {
     min-height: 100vh;
     display: flex;
@@ -257,6 +271,7 @@ body {
     background: linear-gradient(135deg, #e8f4f8 0%, #d4e8f5 100%);
     padding: 20px;
     margin: 0;
+    font-family: 'Inter', sans-serif;
 }
 
 .login-card {
@@ -265,12 +280,12 @@ body {
     padding: 40px 35px;
     max-width: 400px;
     width: 100%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
     text-align: center;
 }
 
 .login-card .login-icon {
-    font-size: 40px;
+    font-size: 48px;
     margin-bottom: 15px;
 }
 
@@ -305,7 +320,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(135,206,250,0.3);
+    box-shadow: 0 4px 15px rgba(135, 206, 250, 0.3);
 }
 
 .login-card .login-btn:hover {
@@ -336,13 +351,17 @@ body {
     color: #7f8c8d;
     font-size: 13px;
     text-decoration: none;
+    transition: color 0.2s;
 }
 
 .login-card .back-link:hover {
     color: #87CEFA;
 }
 
-/* ----- КАБИНЕТ ВОДИТЕЛЯ (driver_dashboard.html) ----- */
+/* ========================================
+   СТИЛИ ДЛЯ КАБИНЕТА ВОДИТЕЛЯ
+   ======================================== */
+
 .driver-page {
     background: #f0f4f8;
     min-height: 100vh;
@@ -356,7 +375,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     margin-bottom: 30px;
 }
 
@@ -381,6 +400,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
+    transition: all 0.3s;
 }
 
 .driver-page .navbar-custom .logout-btn:hover {
@@ -397,7 +417,7 @@ body {
     background: white;
     border-radius: 20px;
     padding: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     text-align: center;
 }
 
@@ -430,6 +450,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     margin: 15px 0;
+    transition: all 0.3s;
 }
 
 .driver-page .stats-card .status-btn.online {
@@ -457,7 +478,7 @@ body {
     background: white;
     border-radius: 20px;
     padding: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .driver-page .orders-card .card-title {
@@ -478,6 +499,7 @@ body {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
+    transition: all 0.2s;
 }
 
 .driver-page .orders-card .order-item:hover {
@@ -508,6 +530,7 @@ body {
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.3s;
 }
 
 .driver-page .orders-card .order-item .accept-btn:hover {
@@ -526,7 +549,7 @@ body {
     border-radius: 20px;
     padding: 25px;
     margin-top: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .driver-page .history-card .card-title {
@@ -548,6 +571,11 @@ body {
     align-items: center;
     flex-wrap: wrap;
     font-size: 13px;
+    transition: all 0.2s;
+}
+
+.driver-page .history-card .history-item:hover {
+    background: #f0f4f8;
 }
 
 .driver-page .history-card .history-item .route {
