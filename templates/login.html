@@ -11,22 +11,17 @@
 <body class="login-page">
 
     <div class="login-card">
-        <div class="login-icon">👨‍✈️</div>
+        <div class="login-icon">
+            <i class="fas fa-user-shield"></i>
+        </div>
         <h1>Вход водителя</h1>
         <p class="subtitle">Gin Taxi</p>
         <div class="divider"></div>
-        <button class="login-btn" id="driverTestLogin">Войти в кабинет</button>
-        <div class="test-badge">⚡ Тестовый режим</div>
+        <a href="/driver-dashboard" class="login-btn">Войти в кабинет</a>
+        <div class="test-badge">Тестовый режим</div>
         <div class="test-hint">Нажмите кнопку для входа</div>
         <a href="/" class="back-link">← На главную</a>
     </div>
-
-    <script>
-        document.getElementById('driverTestLogin').addEventListener('click', function() {
-            localStorage.setItem('driverLoggedIn', 'true');
-            window.location.href = '/driver-dashboard';
-        });
-    </script>
 
 </body>
 </html>
