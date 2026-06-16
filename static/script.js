@@ -1,27 +1,30 @@
-// ========== ПЕРЕМЕННЫЕ ==========
 let userId = localStorage.getItem('userId');
 let userName = localStorage.getItem('userName');
 let map;
 
-// ========== ШАПКА (ОДНА КНОПКА) ==========
-function updateAuthButton() {
-    let link = document.getElementById('authLink');
-    if (!link) return;
+// ========== ШАПКА ==========
+function updateHeader() {
+    let container = document.getElementById('userStatus');
+    if (!container) return;
     
     let uId = localStorage.getItem('userId');
     let uName = localStorage.getItem('userName');
     
     if (uId && uName) {
-        link.textContent = uName;
-        link.href = '/user-profile';
+        container.innerHTML = `
+            <span style="color:white; margin-right:15px;">${uName}</span>
+            <a href="#" onclick="showProfileModal()" style="color:white;">Профиль</a>
+            <a href="#" onclick="logout()" style="color:white; margin-left:15px;">Выйти</a>
+        `;
     } else {
-        link.textContent = 'Войти';
-        link.href = '/login-user';
+        container.innerHTML = `
+            <a href="#" onclick="showLoginModal()" style="color:white; margin-left:15px;">Войти</a>
+            <a href="#" onclick="showRegisterModal()" style="color:white; margin-left:15px;">Регистрация</a>
+        `;
     }
 }
-updateAuthButton();
 
-// ========== МОДАЛЬНЫЕ ОКНА ==========
+// ========== МОДАЛКИ ==========
 function showLoginModal() {
     document.getElementById('loginModal').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
@@ -78,7 +81,6 @@ function closeCommentModal() {
     document.getElementById('overlay').style.display = 'none';
 }
 
-// ========== ОБЩИЕ ФУНКЦИИ ==========
 function makePhoneCall() {
     window.location.href = 'tel:+78121234567';
 }
@@ -102,7 +104,6 @@ function calculatePrice() {
     document.getElementById('pricePreview').innerHTML = 'Стоимость: ' + price + ' руб';
 }
 
-// ========== ЗАКАЗ ==========
 async function submitOrder() {
     let tariff = document.getElementById('orderTariff').value;
     let price = 250;
@@ -114,9 +115,7 @@ async function submitOrder() {
     fd.append('dropoff', document.getElementById('orderDropoff').value);
     fd.append('tariff', tariff);
     fd.append('price', price);
-    
-    let uId = localStorage.getItem('userId');
-    if (uId) fd.append('user_id', uId);
+    if (userId) fd.append('user_id', userId);
     
     await fetch('/save-order', { method: 'POST', body: fd });
     alert('Заказ оформлен на сумму ' + price + ' ₽');
@@ -130,13 +129,13 @@ async function loginUser() {
     fd.append('password', document.getElementById('loginPassword').value);
     let res = await fetch('/login-user', { method: 'POST', body: fd });
     let data = await res.json();
+    
     if (data.success) {
         localStorage.setItem('userId', data.user_id);
         localStorage.setItem('userName', data.fullname);
-        updateAuthButton();
+        updateHeader();
         alert('Добро пожаловать, ' + data.fullname);
         closeLoginModal();
-        window.location.href = '/user-profile';
     } else {
         alert(data.error);
     }
@@ -151,6 +150,7 @@ async function registerUser() {
     fd.append('password', document.getElementById('regPassword').value);
     let res = await fetch('/register', { method: 'POST', body: fd });
     let data = await res.json();
+    
     if (data.success) {
         alert('Регистрация успешна');
         closeRegisterModal();
@@ -163,8 +163,8 @@ async function registerUser() {
 // ========== ВЫХОД ==========
 function logout() {
     localStorage.clear();
-    updateAuthButton();
-    window.location.href = '/';
+    updateHeader();
+    location.reload();
 }
 
 // ========== ПРОФИЛЬ ==========
@@ -173,18 +173,17 @@ async function loadProfile() {
     if (!id) return;
     let res = await fetch('/user-orders/' + id);
     let orders = await res.json();
-    let info = document.getElementById('profileInfo');
-    let history = document.getElementById('ordersHistory');
     
-    if (info) info.innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p><hr>';
+    document.getElementById('profileInfo').innerHTML = '<p><strong>Пользователь:</strong> ' + localStorage.getItem('userName') + '</p><hr>';
+    
     if (orders.length === 0) {
-        if (history) history.innerHTML = '<p>Нет заказов</p>';
+        document.getElementById('ordersHistory').innerHTML = '<p>Нет заказов</p>';
     } else {
         let html = '<h4>История заказов</h4>';
         orders.forEach(o => {
             html += '<div class="order-card"><strong>' + o.pickup + '</strong> → <strong>' + o.dropoff + '</strong><br>' + o.tariff + ' | ' + o.price + ' ₽<br>Статус: ' + o.status + '<br><small>' + new Date(o.date).toLocaleString() + '</small></div>';
         });
-        if (history) history.innerHTML = html;
+        document.getElementById('ordersHistory').innerHTML = html;
     }
 }
 
@@ -215,14 +214,15 @@ function initMap() {
 }
 initMap();
 
-
-
 // ========== ОБРАБОТЧИКИ ==========
 document.getElementById('orderTariff')?.addEventListener('change', calculatePrice);
 document.getElementById('orderPickup')?.addEventListener('input', calculatePrice);
 document.getElementById('orderDropoff')?.addEventListener('input', calculatePrice);
 
-// ========== ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ HTML ==========
+// ========== ЗАПУСК ==========
+updateHeader();
+
+// ========== ГЛОБАЛЬНЫЕ ФУНКЦИИ ==========
 window.openOrderModal = openOrderModal;
 window.closeOrderModal = closeOrderModal;
 window.openCommentModal = openCommentModal;
@@ -240,4 +240,3 @@ window.loginUser = loginUser;
 window.logout = logout;
 window.closeAllModals = closeAllModals;
 window.calculatePrice = calculatePrice;
-window.updateAuthButton = updateAuthButton;
