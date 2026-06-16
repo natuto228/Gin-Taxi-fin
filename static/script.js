@@ -153,7 +153,7 @@ document.getElementById('orderTariff')?.addEventListener('change', calculatePric
 document.getElementById('orderPickup')?.addEventListener('input', calculatePrice);
 document.getElementById('orderDropoff')?.addEventListener('input', calculatePrice);
 
-// ===== КАБИНЕТ ВОДИТЕЛЯ =====
+// ===== ЛОГИКА ДЛЯ КАБИНЕТА ВОДИТЕЛЯ =====
 if (window.location.pathname === '/driver-dashboard') {
     if (!localStorage.getItem('driverLoggedIn')) {
         window.location.href = '/login';
