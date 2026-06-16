@@ -155,12 +155,9 @@ document.getElementById('orderDropoff')?.addEventListener('input', calculatePric
 
 // ===== ЛОГИКА ДЛЯ КАБИНЕТА ВОДИТЕЛЯ =====
 if (window.location.pathname === '/driver-dashboard') {
-    // Сохраняем авторизацию, если её нет
     if (!localStorage.getItem('driverLoggedIn')) {
         localStorage.setItem('driverLoggedIn', 'true');
     }
-
-    // Проверка авторизации (если не сохранилось — редирект)
     if (!localStorage.getItem('driverLoggedIn')) {
         window.location.href = '/login';
     }
@@ -180,6 +177,7 @@ if (window.location.pathname === '/driver-dashboard') {
             const res = await fetch('/user-orders/all');
             const orders = await res.json();
             const container = document.getElementById('ordersList');
+            if (!container) return;
             if (!orders.length) {
                 container.innerHTML = '<div class="no-orders">Нет новых заказов</div>';
                 return;
@@ -209,7 +207,9 @@ if (window.location.pathname === '/driver-dashboard') {
                 });
             });
         } catch (e) {
-            document.getElementById('ordersList').innerHTML = '<div class="no-orders">Ошибка загрузки</div>';
+            console.error('Ошибка загрузки заказов:', e);
+            const container = document.getElementById('ordersList');
+            if (container) container.innerHTML = '<div class="no-orders">Ошибка загрузки</div>';
         }
     }
 
@@ -218,6 +218,7 @@ if (window.location.pathname === '/driver-dashboard') {
             const res = await fetch('/driver-orders/1');
             const orders = await res.json();
             const container = document.getElementById('historyList');
+            if (!container) return;
             if (!orders.length) {
                 container.innerHTML = '<div class="no-orders">Нет выполненных заказов</div>';
                 return;
@@ -236,7 +237,9 @@ if (window.location.pathname === '/driver-dashboard') {
             });
             container.innerHTML = html;
         } catch (e) {
-            container.innerHTML = '<div class="no-orders">Ошибка загрузки</div>';
+            console.error('Ошибка загрузки истории:', e);
+            const container = document.getElementById('historyList');
+            if (container) container.innerHTML = '<div class="no-orders">Ошибка загрузки</div>';
         }
     }
 
