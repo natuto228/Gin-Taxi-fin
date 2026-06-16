@@ -51,6 +51,13 @@ def init_database():
         )
     ''')
     
+    # ДОБАВЛЯЕМ КОЛОНКУ driver_id, ЕСЛИ ЕЁ НЕТ
+    try:
+        cursor.execute('ALTER TABLE orders ADD COLUMN driver_id INTEGER')
+        print("Колонка driver_id добавлена")
+    except Exception as e:
+        print(f"Колонка driver_id уже существует или ошибка: {e}")
+    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS applications (
             id SERIAL PRIMARY KEY,
@@ -181,7 +188,7 @@ async def get_all_orders():
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute('''
         SELECT id, pickup_address, dropoff_address, tariff, price, status
-        FROM orders WHERE status = 'Новый' ORDER BY created_at DESC
+        FROM orders ORDER BY created_at DESC
     ''')
     orders = cursor.fetchall()
     cursor.close()
