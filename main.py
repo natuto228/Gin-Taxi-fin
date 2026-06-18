@@ -22,6 +22,7 @@ def init_database():
     conn = get_db()
     cursor = conn.cursor()
     
+    # Таблица users
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -35,6 +36,7 @@ def init_database():
     ''')
     conn.commit()
     
+    # Таблица orders
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS orders (
             id SERIAL PRIMARY KEY,
@@ -53,22 +55,20 @@ def init_database():
     ''')
     conn.commit()
     
+    # Добавляем колонки (если их нет)
     try:
         cursor.execute('ALTER TABLE orders ADD COLUMN driver_id INTEGER')
         conn.commit()
-        print("Колонка driver_id добавлена")
-    except Exception as e:
+    except:
         conn.rollback()
-        print(f"Колонка driver_id уже существует или ошибка: {e}")
     
     try:
         cursor.execute('ALTER TABLE orders ADD COLUMN status TEXT DEFAULT \'Новый\'')
         conn.commit()
-        print("Колонка status добавлена")
-    except Exception as e:
+    except:
         conn.rollback()
-        print(f"Колонка status уже существует или ошибка: {e}")
     
+    # Таблица applications
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS applications (
             id SERIAL PRIMARY KEY,
@@ -81,6 +81,7 @@ def init_database():
     ''')
     conn.commit()
     
+    # Тестовые данные
     cursor.execute('SELECT * FROM users WHERE email = %s', ('user@gin.ru',))
     if not cursor.fetchone():
         cursor.execute('''
@@ -101,6 +102,8 @@ def init_database():
     conn.close()
 
 init_database()
+
+# ========== МАРШРУТЫ ==========
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -182,6 +185,20 @@ async def save_order(
     conn.close()
     return {"success": True}
 
+# ⚠️ ВАЖНО: ЭТОТ МАРШРУТ БЕЗ ПАРАМЕТРОВ!
+@app.get("/user-orders/all")
+async def get_all_orders():
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute('''
+        SELECT id, pickup_address, dropoff_address, tariff, price, status
+        FROM orders ORDER BY created_at DESC
+    ''')
+    orders = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return [{"id": o['id'], "pickup": o['pickup_address'], "dropoff": o['dropoff_address'], "tariff": o['tariff'], "price": o['price'], "status": o['status']} for o in orders]
+
 @app.get("/user-orders/{user_id}")
 async def get_user_orders(user_id: int):
     conn = get_db()
@@ -194,19 +211,6 @@ async def get_user_orders(user_id: int):
     cursor.close()
     conn.close()
     return [{"id": o['id'], "pickup": o['pickup_address'], "dropoff": o['dropoff_address'], "tariff": o['tariff'], "price": o['price'], "status": o['status'], "date": o['created_at']} for o in orders]
-
-@app.get("/user-orders/all")  # <-- ИСПРАВЛЕНО! БЕЗ параметра
-async def get_all_orders():
-    conn = get_db()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute('''
-        SELECT id, pickup_address, dropoff_address, tariff, price, status
-        FROM orders ORDER BY created_at DESC
-    ''')
-    orders = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return [{"id": o['id'], "pickup": o['pickup_address'], "dropoff": o['dropoff_address'], "tariff": o['tariff'], "price": o['price'], "status": o['status']} for o in orders]
 
 @app.get("/driver-orders/{driver_id}")
 async def get_driver_orders(driver_id: int):
