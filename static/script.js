@@ -128,23 +128,40 @@ async function loadProfile() {
     }
 }
 
-// ===== КАРТА =====
+// ===== КАРТА (Leaflet + OSM + поиск) =====
 function initMap() {
-    if (typeof ymaps === 'undefined') { setTimeout(initMap, 500); return; }
-    ymaps.ready(function() {
-        map = new ymaps.Map('map', {
-            center: [55.751244, 37.618423],
-            zoom: 12,
-            controls: ['zoomControl', 'fullscreenControl']
-        });
-        let geolocationControl = new ymaps.control.GeolocationControl({ options: { float: 'right' } });
-        map.controls.add(geolocationControl);
-        map.events.add('click', function(e) {
-            let coords = e.get('coords');
-            let pickupInput = document.getElementById('orderPickup');
-            if (pickupInput) pickupInput.value = coords[0].toFixed(4) + ', ' + coords[1].toFixed(4);
-        });
+    if (typeof L === 'undefined') {
+        setTimeout(initMap, 500);
+        return;
+    }
+
+    map = L.map('map').setView([55.751244, 37.618423], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Поиск
+    if (typeof L.Control.geocoder !== 'undefined') {
+        const geocoder = L.Control.geocoder({
+            defaultMarkGeocode: true,
+            placeholder: 'Поиск адреса...',
+            errorMessage: 'Адрес не найден'
+        }).addTo(map);
+        console.log('Поиск на карте добавлен');
+    } else {
+        console.warn('Geocoder плагин не загружен');
+    }
+
+    // Клик по карте — заполняем адрес
+    map.on('click', function(e) {
+        const lat = e.latlng.lat.toFixed(4);
+        const lng = e.latlng.lng.toFixed(4);
+        const pickupInput = document.getElementById('orderPickup');
+        if (pickupInput) pickupInput.value = lat + ', ' + lng;
     });
+
+    console.log('Карта загружена');
 }
 initMap();
 
