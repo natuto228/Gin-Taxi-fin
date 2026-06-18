@@ -128,32 +128,41 @@ async function loadProfile() {
     }
 }
 
-// ===== КАРТА (Leaflet + OSM + поиск) =====
+// ===== КРАСИВАЯ КАРТА СО ВСТРОЕННЫМ ПОИСКОМ (Leaflet + CartoDB) =====
 function initMap() {
     if (typeof L === 'undefined') {
         setTimeout(initMap, 500);
         return;
     }
 
-    map = L.map('map').setView([55.751244, 37.618423], 12);
+    // Центр — Санкт-Петербург
+    map = L.map('map').setView([59.9343, 30.3351], 12);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+    // КРАСИВАЯ СВЕТЛАЯ КАРТА (CartoDB Voyager)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap, © CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 19
     }).addTo(map);
 
-    // Поиск
+    // ВСТРОЕННЫЙ ПОИСК
     if (typeof L.Control.geocoder !== 'undefined') {
-        const geocoder = L.Control.geocoder({
+        L.Control.geocoder({
             defaultMarkGeocode: true,
             placeholder: 'Поиск адреса...',
-            errorMessage: 'Адрес не найден'
+            errorMessage: 'Адрес не найден',
+            params: {
+                'countrycodes': 'ru',
+                'viewbox': '29.5,60.5,31.5,59.5',
+                'bounded': 1
+            }
         }).addTo(map);
-        console.log('Поиск на карте добавлен');
+        console.log('Поиск на карте добавлен (приоритет СПб)');
     } else {
         console.warn('Geocoder плагин не загружен');
     }
 
-    // Клик по карте — заполняем адрес
+    // Клик по карте — заполняет поле "Адрес подачи"
     map.on('click', function(e) {
         const lat = e.latlng.lat.toFixed(4);
         const lng = e.latlng.lng.toFixed(4);
@@ -161,8 +170,10 @@ function initMap() {
         if (pickupInput) pickupInput.value = lat + ', ' + lng;
     });
 
-    console.log('Карта загружена');
+    console.log('Красивая карта с поиском загружена');
 }
+
+// ===== ЗАПУСК КАРТЫ =====
 initMap();
 
 // ===== ОБРАБОТЧИКИ =====
