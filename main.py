@@ -22,6 +22,7 @@ def init_database():
     conn = get_db()
     cursor = conn.cursor()
     
+    # Таблица users
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -33,7 +34,9 @@ def init_database():
             created_at TIMESTAMP
         )
     ''')
+    conn.commit()  # <-- ВАЖНО! Фиксируем после каждой таблицы
     
+    # Таблица orders
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS orders (
             id SERIAL PRIMARY KEY,
@@ -50,18 +53,26 @@ def init_database():
             created_at TIMESTAMP
         )
     ''')
+    conn.commit()
     
-    # ДОБАВЛЯЕМ ВСЕ НУЖНЫЕ КОЛОНКИ, ЕСЛИ ИХ НЕТ
+    # ДОБАВЛЯЕМ КОЛОНКИ ПО ОТДЕЛЬНОСТИ (в своей транзакции)
     try:
         cursor.execute('ALTER TABLE orders ADD COLUMN driver_id INTEGER')
-    except Exception:
-        pass
+        conn.commit()
+        print("Колонка driver_id добавлена")
+    except Exception as e:
+        conn.rollback()  # Откатываем только эту операцию
+        print(f"Колонка driver_id уже существует или ошибка: {e}")
     
     try:
         cursor.execute('ALTER TABLE orders ADD COLUMN status TEXT DEFAULT \'Новый\'')
-    except Exception:
-        pass
+        conn.commit()
+        print("Колонка status добавлена")
+    except Exception as e:
+        conn.rollback()
+        print(f"Колонка status уже существует или ошибка: {e}")
     
+    # Таблица applications
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS applications (
             id SERIAL PRIMARY KEY,
@@ -72,13 +83,16 @@ def init_database():
             created_at TIMESTAMP
         )
     ''')
+    conn.commit()
     
+    # Тестовые пользователи
     cursor.execute('SELECT * FROM users WHERE email = %s', ('user@gin.ru',))
     if not cursor.fetchone():
         cursor.execute('''
             INSERT INTO users (fullname, phone, email, password, role, created_at)
             VALUES (%s, %s, %s, %s, %s, %s)
         ''', ('Тестовый Пользователь', '+79991234567', 'user@gin.ru', '123456', 'user', datetime.now()))
+        conn.commit()
     
     cursor.execute('SELECT * FROM users WHERE email = %s', ('driver@gin.ru',))
     if not cursor.fetchone():
@@ -86,13 +100,14 @@ def init_database():
             INSERT INTO users (fullname, phone, email, password, role, created_at)
             VALUES (%s, %s, %s, %s, %s, %s)
         ''', ('Тестовый Водитель', '+79998887766', 'driver@gin.ru', '12345', 'driver', datetime.now()))
+        conn.commit()
     
-    conn.commit()
     cursor.close()
     conn.close()
 
 init_database()
 
+# ===== ВСЕ МАРШРУТЫ (без изменений) =====
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -190,7 +205,6 @@ async def get_user_orders(user_id: int):
 async def get_all_orders():
     conn = get_db()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    # УБРАНО УСЛОВИЕ WHERE status = 'Новый', чтобы видеть все заказы
     cursor.execute('''
         SELECT id, pickup_address, dropoff_address, tariff, price, status
         FROM orders ORDER BY created_at DESC
